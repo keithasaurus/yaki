@@ -1,5 +1,5 @@
 import asyncio
-from typing import Callable, Awaitable
+from typing import Callable, Awaitable, Union
 
 from src.http.response.types import HttpResponse, HttpRequest
 from src.types import Sender, Scope, ASGIInstance, Receiver
@@ -30,11 +30,13 @@ async def respond(response: HttpResponse, send: Sender) -> None:
                 "more_body": False})
 
 
-def request_response(func: Callable[[Scope, HttpRequest], Awaitable[HttpResponse]]):
-    """
-    Takes a function or coroutine `func(request, **kwargs) -> response`,
-    and returns an ASGI application.
-    """
+HttpViewFunc = Union[
+    Callable[[HttpRequest], Awaitable[HttpResponse]],
+    Callable[[HttpRequest], HttpResponse],
+]
+
+
+def request_response(func: HttpViewFunc):
     is_coroutine = asyncio.iscoroutinefunction(func)
 
     def app(scope: Scope) -> ASGIInstance:
@@ -43,10 +45,10 @@ def request_response(func: Callable[[Scope, HttpRequest], Awaitable[HttpResponse
             request = await receive()
 
             if is_coroutine:
-                response = await func(scope, request)
+                # ignoring because cannot signify to mypy that this is safe
+                response = await func(request)  # type: ignore
             else:
-                response = func(scope, request)
-
+                response = func(request)
             await respond(response, send)
 
         return awaitable

@@ -7,10 +7,9 @@ ASGIValue = Union[bytes, str, int, float, List[Any], Dict[str, Any], bool, None]
 ASGIEvent = Dict[str, ASGIValue]
 
 Scope = Mapping[str, ASGIValue]
-Message = Mapping[str, ASGIValue]
 
-Receiver = Callable[[], Awaitable[Message]]
-Sender = Callable[[Message], Awaitable[None]]
+Receiver = Callable[[], Awaitable[ASGIEvent]]
+Sender = Callable[[ASGIEvent], Awaitable[None]]
 
 ASGIInstance = Callable[[Receiver, Sender], Awaitable[None]]
 
