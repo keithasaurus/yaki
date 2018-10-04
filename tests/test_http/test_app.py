@@ -7,7 +7,7 @@ from src.types import ASGIEvent
 
 
 class RespondTests(TestCase):
-    def test_send_gets_multiple_results(self):
+    def test_send_gets_multiple_events(self):
         result_list = []
 
         response = HttpResponse(status_code=200,
@@ -25,5 +25,6 @@ class RespondTests(TestCase):
                          [{'headers': [(b'header1', b'stuff'), (b'no2', b'other')],
                            'status': 200,
                            'type': 'http.response.start'},
-                          {'body': b'something', 'more_body': False,
+                          {'body': b'something',
+                           'more_body': False,
                            'type': 'http.response.body'}])

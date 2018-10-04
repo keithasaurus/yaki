@@ -1,6 +1,7 @@
 from src.http.app import request_response
-from src.http.response.types import HttpResponse, HttpRequest
-from src.types import ASGIInstance, Scope, Sender, Receiver
+from src.http.request.types import HttpRequest
+from src.http.response.types import HttpResponse
+from src.types import ASGIInstance
 
 
 async def some_http_view(request: HttpRequest) -> HttpResponse:

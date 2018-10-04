@@ -31,48 +31,76 @@ def ws_outgoing_to_event_dict(event: WSOutgoingEvent) -> ASGIEvent:
     raise TypeError(f"type `{type(event)}` is not a valid WSOutgoingEvent")
 
 
+
+def _event_to_receive(event: ASGIEvent) -> WSReceive:
+    str_content = event.get("text")
+    content = str_content if str_content is not None else event['bytes']
+    assert isinstance(content, (str, bytes))
+    return WSReceive(content)
+
+
+def _event_to_disconnect(event: ASGIEvent) -> WSDisconnect:
+    code = event["code"]
+    assert isinstance(code, int)
+    return WSDisconnect(code=code)
+
+
 def ws_incoming_to_datatype(event: ASGIEvent) -> WSIncomingEvent:
+    convert_funcs: Dict[str, Callable[[ASGIEvent], WSIncomingEvent]] = {
+        "connect": lambda x: WSConnect(),
+        "receive": _event_to_receive,
+        "disconnect": _event_to_disconnect
+    }
+
     event_type = event['type']
     assert isinstance(event_type, str)
-    if event_type == "connect":
-        return WSConnect()
+    event_type = event_type.replace('websocket.', '')
 
-    elif event_type == "receive":
-        str_content = event.get("text")
-        content = str_content if str_content is not None else event['bytes']
-        assert isinstance(content, (str, bytes))
-        return WSReceive(content)
+    return convert_funcs[event_type](event)
 
-    elif event_type == "disconnect":
-        code = event["code"]
-        assert isinstance(code, int)
-        return WSDisconnect(code=code)
+
+def get_incoming_new_client_state(
+        client_state: WSState,
+        event: WSIncomingEvent
+) -> WSState:
+    if client_state == WSState.CONNECTING:
+        assert isinstance(event, WSConnect)
+        return WSState.CONNECTED
+    elif client_state == WSState.CONNECTED:
+        if isinstance(event, WSDisconnect):
+            return WSState.DISCONNECTED
+        else:
+            assert isinstance(event, WSReceive)
+            return WSState.CONNECTED
     else:
-        raise ValueError(f"Bad received dict. type was `{event['type']}`")
+        raise RuntimeError('Cannot call "receive" once a disconnect '
+                           'message has been received.')
 
 
-async def should_close(client_state: WSState,
-                       event: WSOutgoingEvent) -> bool:
+def get_outgoing_new_client_state(
+        client_state: WSState,
+        event: WSOutgoingEvent) -> WSState:
     if client_state == WSState.CONNECTING:
         if isinstance(event, WSClose):
-            return True
+            return WSState.DISCONNECTED
         elif isinstance(event, WSAccept):
-            return False
+            return WSState.CONNECTING
         else:
             raise TypeError("Bad type for connecting")
 
     elif client_state == WSState.CONNECTED:
         if isinstance(event, WSSend):
-            return False
+            return WSState.CONNECTED
         elif isinstance(event, WSClose):
-            return True
+            return WSState.DISCONNECTED
         else:
             raise TypeError("Bad type for connected")
     else:
         raise Exception("Something is wrong!")
 
 
-def websocket_endpoint(func: Callable[[WSIncomingEvent], Awaitable[WSOutgoingEvent]]):
+def websocket_endpoint(
+        func: Callable[[WSIncomingEvent], Awaitable[WSOutgoingEvent]]):
     def app(scope: Scope) -> ASGIInstance:
         state: Dict[str, Any] = {
             "client_state": WSState.CONNECTING
@@ -89,26 +117,17 @@ def websocket_endpoint(func: Callable[[WSIncomingEvent], Awaitable[WSOutgoingEve
 
                 event: WSIncomingEvent = ws_incoming_to_datatype(event_dict)
 
-                client_state = state["client_state"]
+                state["client_state"] = get_incoming_new_client_state(
+                    state["client_state"],
+                    event)
 
-                if client_state == WSState.CONNECTING:
-                    assert isinstance(event, WSConnect)
-                    state['client_state'] = WSState.CONNECTED
-                elif client_state == WSState.CONNECTED:
-                    if isinstance(event, WSDisconnect):
-                        state[client_state] = WSState.DISCONNECTED
-                    else:
-                        assert isinstance(event, WSReceive)
-                        outgoing = await func(event)
+                if isinstance(event, WSReceive):
+                    outgoing = await func(event)
 
-                        if should_close(state["client_state"], outgoing):
-                            state["client_state"] = WSState.DISCONNECTED
+                    state["client_state"] = get_outgoing_new_client_state(
+                        state["client_state"], outgoing)
 
-                        await send(ws_outgoing_to_event_dict(outgoing))
-
-                else:
-                    raise RuntimeError('Cannot call "receive" once a disconnect '
-                                       'message has been received.')
+                    await send(ws_outgoing_to_event_dict(outgoing))
 
                 if state["client_state"] == WSState.DISCONNECTED:
                     break
