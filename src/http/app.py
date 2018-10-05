@@ -1,9 +1,9 @@
-import asyncio
-from typing import Callable, Awaitable, Union, Optional, Tuple, List
+from src.http.request.types import HostPort, HttpRequest
+from src.http.response.types import HttpDisconnect, HttpResponse
+from src.types import ASGIInstance, ASGIValue, Receiver, Scope, Sender
+from typing import Awaitable, Callable, List, Optional, Tuple, Union
 
-from src.http.request.types import HttpRequest, HostPort
-from src.http.response.types import HttpResponse, HttpDisconnect
-from src.types import Sender, Scope, ASGIInstance, Receiver, ASGIValue
+import asyncio
 
 
 async def respond(response: HttpResponse, send: Sender) -> None:

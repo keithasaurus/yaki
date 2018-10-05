@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+TIME_START=`date +%s`
+
+echo "Running Flake8"
+flake8 . || exit $?
+
+echo "Running mypy type checks"
+ mypy --ignore-missing-imports src || exit $?
+
+echo "Running tests with coverage"
+coverage run -m unittest discover tests || exit $?
+
+# this number needs to move up big time. only this low temporarily
+COVERAGE_THRESHOLD=40
+coverage report --fail-under "$COVERAGE_THRESHOLD" > /dev/null 2>&1
+
+COVERAGE_EXIT=$?
+if [ "$COVERAGE_EXIT" -ne 0 ]
+then
+    echo "-------------"
+    echo ""
+    echo "THE SKY IS FALLING!!! Testing coverage under $COVERAGE_THRESHOLD"
+    echo ""
+    echo "-------------"
+    echo "run 'coverage report' or 'coverage html' to see where the gaps are"
+    exit "$COVERAGE_EXIT"
+fi
+
+coverage erase
+
+TIME_END=`date +%s`
+RUNTIME=$((TIME_END-TIME_START))
+
+echo "TESTS PASSED IN $RUNTIME SECONDS! YOU ARE A GOOD PERSON! :)"

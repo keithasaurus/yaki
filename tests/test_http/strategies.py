@@ -1,6 +1,7 @@
+from hypothesis import strategies as st
+
 import random
 
-from hypothesis import strategies as st
 
 def coinflip():
     return random.random() > .5

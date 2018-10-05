@@ -1,4 +1,4 @@
-from typing import NamedTuple, Iterable, List, Tuple
+from typing import Iterable, List, NamedTuple, Tuple
 
 
 class HttpResponse(NamedTuple):

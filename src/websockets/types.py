@@ -1,5 +1,6 @@
+from typing import NamedTuple, Optional, Union
+
 import enum
-from typing import Union, NamedTuple, Optional
 
 
 class WSConnect(NamedTuple):

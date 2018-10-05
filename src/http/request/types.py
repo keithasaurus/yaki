@@ -1,4 +1,4 @@
-from typing import NamedTuple, Optional, Tuple, List
+from typing import List, NamedTuple, Optional, Tuple
 
 
 class HostPort(NamedTuple):
@@ -17,7 +17,3 @@ class HttpRequest(NamedTuple):
     root_path: str
     scheme: str
     server: Optional[HostPort]
-
-
-
-

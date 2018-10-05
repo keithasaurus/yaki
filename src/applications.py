@@ -16,4 +16,3 @@ async def some_http_view(request: HttpRequest) -> HttpResponse:
 
 def kn() -> ASGIInstance:
     return request_response(some_http_view)
-

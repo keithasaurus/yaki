@@ -1,8 +1,16 @@
-from typing import Callable, Awaitable, Dict, Any
-
-from src.types import ASGIEvent, Scope, ASGIInstance, Receiver, Sender, ASGIValue
-from src.websockets.types import WSDisconnect, WSClose, WSSend, WSState, \
-    WSOutgoingEvent, WSAccept, WSIncomingEvent, WSConnect, WSReceive
+from src.types import ASGIEvent, ASGIInstance, ASGIValue, Receiver, Scope, Sender
+from src.websockets.types import (
+    WSAccept,
+    WSClose,
+    WSConnect,
+    WSDisconnect,
+    WSIncomingEvent,
+    WSOutgoingEvent,
+    WSReceive,
+    WSSend,
+    WSState
+)
+from typing import Any, Awaitable, Callable, Dict
 
 
 async def some_websocket_endpoint(event: WSIncomingEvent) -> WSOutgoingEvent:
@@ -23,14 +31,17 @@ def _ws_send_to_asgi_dict(event: WSSend) -> ASGIEvent:
 
 
 def ws_outgoing_to_event_dict(event: WSOutgoingEvent) -> ASGIEvent:
-    to_dict_funcs: Dict[type, Callable[[WSOutgoingEvent], ASGIEvent]] = {
-        WSAccept: lambda x: event_to_dict("accept", {"subprotocol": x.subprotocol}),
-        WSSend: _ws_send_to_asgi_dict,
-        WSClose: lambda x: event_to_dict("close", {"code": x.code}),
-        WSDisconnect: lambda x: event_to_dict("disconnect", {"code": x.code})
-    }
+    if isinstance(event, WSAccept):
+        return event_to_dict("accept", {"subprotocol": event.subprotocol})
+    elif isinstance(event, WSSend):
+        content_key = "text" if isinstance(event.content, str) else "bytes"
+        return event_to_dict("send", {content_key: event.content})
+    elif isinstance(event, WSClose):
+        return event_to_dict("close", {"code": event.code})
+    elif isinstance(event, WSDisconnect):
+        return event_to_dict("disconnect", {"code": event.code})
 
-    return to_dict_funcs[type(event)](event)
+    raise TypeError(f"type `{type(event)}` is not a valid WSOutgoingEvent")
 
 
 def _event_to_receive(event: ASGIEvent) -> WSReceive:

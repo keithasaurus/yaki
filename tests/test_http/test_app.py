@@ -1,14 +1,12 @@
-import asyncio
-from unittest import TestCase
-
-from src.http.app import respond, request_response, asgi_to_http_request
+from hypothesis import given, settings
+from src.http.app import asgi_to_http_request, request_response, respond
 from src.http.request.types import HttpRequest
 from src.http.response.types import HttpResponse
 from src.types import ASGIEvent
+from tests.test_http.strategies import asgi_http_request, asgi_http_scope
+from unittest import TestCase
 
-from hypothesis import given, settings
-
-from tests.test_http.strategies import asgi_http_scope, asgi_http_request
+import asyncio
 
 
 class RespondTests(TestCase):
@@ -56,11 +54,9 @@ class RequestResponseTest(TestCase):
                                 headers=[(b"one", b"header")],
                                 body=[b"bad request"])
 
-        app = request_response(test_view)
+        scoped_app = request_response(test_view)(test_scope)
 
-        scoped = app(test_scope)
-
-        asyncio.run(scoped(receive, send))
+        asyncio.run(scoped_app(receive, send))
 
         self.assertEqual(result,
                          [{'headers': [(b'one', b'header')],
@@ -68,4 +64,3 @@ class RequestResponseTest(TestCase):
                            'type': 'http.response.start'},
                           {'body': b'bad request', 'more_body': False,
                               'type': 'http.response.body'}])
-

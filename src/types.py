@@ -1,4 +1,4 @@
-from typing import Callable, Any, Mapping, Awaitable, Union, Dict, List
+from typing import Any, Awaitable, Callable, Dict, List, Mapping, Union
 
 # Note the Anys here should be recursive ASGIValue, but are not because
 # of mypy's current limitations
