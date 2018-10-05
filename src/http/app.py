@@ -120,7 +120,7 @@ def request_response(func: HttpViewFunc):
 
             request_result = await wait_for_request(scope, receive)
 
-            if isinstance(request_result, HttpResponse):
+            if isinstance(request_result, HttpRequest):
                 if is_coroutine:
                     # ignoring because cannot signify to mypy that this is safe
                     response = await func(request_result)  # type: ignore

@@ -17,19 +17,20 @@ def event_to_dict(event_type: str,
     return event_details
 
 
+def _ws_send_to_asgi_dict(event: WSSend) -> ASGIEvent:
+    content_key = "text" if isinstance(event.content, str) else "bytes"
+    return event_to_dict("send", {content_key: event.content})
+
+
 def ws_outgoing_to_event_dict(event: WSOutgoingEvent) -> ASGIEvent:
-    if isinstance(event, WSAccept):
-        return event_to_dict("accept", {"subprotocol": event.subprotocol})
-    elif isinstance(event, WSSend):
-        content_key = "text" if isinstance(event.content, str) else "bytes"
-        return event_to_dict("send", {content_key: event.content})
-    elif isinstance(event, WSClose):
-        return event_to_dict("close", {"code": event.code})
-    elif isinstance(event, WSDisconnect):
-        return event_to_dict("disconnect", {"code": event.code})
+    to_dict_funcs: Dict[type, Callable[[WSOutgoingEvent], ASGIEvent]] = {
+        WSAccept: lambda x: event_to_dict("accept", {"subprotocol": x.subprotocol}),
+        WSSend: _ws_send_to_asgi_dict,
+        WSClose: lambda x: event_to_dict("close", {"code": x.code}),
+        WSDisconnect: lambda x: event_to_dict("disconnect", {"code": x.code})
+    }
 
-    raise TypeError(f"type `{type(event)}` is not a valid WSOutgoingEvent")
-
+    return to_dict_funcs[type(event)](event)
 
 
 def _event_to_receive(event: ASGIEvent) -> WSReceive:
@@ -59,10 +60,8 @@ def ws_incoming_to_datatype(event: ASGIEvent) -> WSIncomingEvent:
     return convert_funcs[event_type](event)
 
 
-def get_incoming_new_client_state(
-        client_state: WSState,
-        event: WSIncomingEvent
-) -> WSState:
+def get_incoming_new_client_state(client_state: WSState,
+                                  event: WSIncomingEvent) -> WSState:
     if client_state == WSState.CONNECTING:
         assert isinstance(event, WSConnect)
         return WSState.CONNECTED
@@ -77,9 +76,8 @@ def get_incoming_new_client_state(
                            'message has been received.')
 
 
-def get_outgoing_new_client_state(
-        client_state: WSState,
-        event: WSOutgoingEvent) -> WSState:
+def get_outgoing_new_client_state(client_state: WSState,
+                                  event: WSOutgoingEvent) -> WSState:
     if client_state == WSState.CONNECTING:
         if isinstance(event, WSClose):
             return WSState.DISCONNECTED
@@ -117,6 +115,7 @@ def websocket_endpoint(
 
                 event: WSIncomingEvent = ws_incoming_to_datatype(event_dict)
 
+                # update client state based on received event
                 state["client_state"] = get_incoming_new_client_state(
                     state["client_state"],
                     event)
@@ -124,6 +123,7 @@ def websocket_endpoint(
                 if isinstance(event, WSReceive):
                     outgoing = await func(event)
 
+                    # update client state to reflect outgoing event
                     state["client_state"] = get_outgoing_new_client_state(
                         state["client_state"], outgoing)
 
