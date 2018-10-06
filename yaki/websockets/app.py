@@ -33,6 +33,14 @@ def _ws_send_to_asgi_dict(event: WSSend) -> AsgiEvent:
     return event_to_dict("send", {content_key: event.content})
 
 
+def ws_disconnect_to_dict(event: WSDisconnect) -> AsgiEvent:
+    return event_to_dict("disconnect", {"code": event.code})
+
+
+def ws_close_to_dict(event: WSClose) -> AsgiEvent:
+    return event_to_dict("close", {"code": event.code})
+
+
 def ws_outgoing_to_event_dict(event: WSOutgoingEvent) -> AsgiEvent:
     if isinstance(event, WSAccept):
         return event_to_dict("accept", {"subprotocol": event.subprotocol})
@@ -40,9 +48,9 @@ def ws_outgoing_to_event_dict(event: WSOutgoingEvent) -> AsgiEvent:
         content_key = "text" if isinstance(event.content, str) else "bytes"
         return event_to_dict("send", {content_key: event.content})
     elif isinstance(event, WSClose):
-        return event_to_dict("close", {"code": event.code})
+        return ws_close_to_dict(event)
     elif isinstance(event, WSDisconnect):
-        return event_to_dict("disconnect", {"code": event.code})
+        return ws_disconnect_to_dict(event)
 
     raise TypeError(f"type `{type(event)}` is not a valid WSOutgoingEvent")
 
@@ -143,15 +151,15 @@ def ws_app(
     return app
 
 
-async def basic_connect(scope: Scope) -> WSAccept:
+async def connect_accept(scope: Scope) -> WSAccept:
     return WSAccept(subprotocol=None)
 
 
-async def basic_disconnect(scope: Scope, event) -> None:
+async def disconnect_noop(scope: Scope, event) -> None:
     return None
 
 
 ws_app_receiver_only: Callable[[ReceiveHandler], ScopeAsgiInstance] = (
     partial(ws_app,
-            connect_handler=basic_connect,
-            client_disconnect_handler=basic_disconnect))
+            connect_handler=connect_accept,
+            client_disconnect_handler=disconnect_noop))

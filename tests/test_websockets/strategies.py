@@ -65,3 +65,15 @@ def ws_close(draw):
         ret["code"] = random.randint(1, 20000)
 
     return ret
+
+
+@st.composite
+def ws_disconnect(draw):
+    ret = {
+        "type": "websocket.close"
+    }
+
+    if coinflip():
+        ret["code"] = random.randint(1, 20000)
+
+    return ret
