@@ -1,7 +1,7 @@
 from typing import Awaitable, Callable, List, Optional, Tuple, Union
 from yaki.http.request.types import HostPort, HttpRequest
 from yaki.http.response.types import HttpDisconnect, HttpResponse
-from yaki.types import ASGIInstance, ASGIValue, Receiver, Scope, Sender
+from yaki.types import AsgiInstance, AsgiValue, Receiver, Scope, Sender
 
 import asyncio
 
@@ -40,7 +40,7 @@ HttpViewFunc = Union[
 ]
 
 
-def _get_hostport(val: Optional[ASGIValue]) -> Optional[HostPort]:
+def _get_hostport(val: Optional[AsgiValue]) -> Optional[HostPort]:
     if isinstance(val, list) and len(val) == 2:
         host, port = val
         if isinstance(host, str) and isinstance(port, int):
@@ -48,7 +48,7 @@ def _get_hostport(val: Optional[ASGIValue]) -> Optional[HostPort]:
     return None
 
 
-def _get_tuple_headers(val: ASGIValue) -> List[Tuple[bytes, bytes]]:
+def _get_tuple_headers(val: AsgiValue) -> List[Tuple[bytes, bytes]]:
     headers = []
 
     if isinstance(val, list):
@@ -117,7 +117,7 @@ async def wait_for_request(scope: Scope,
 def http_app(func: HttpViewFunc):
     is_coroutine = asyncio.iscoroutinefunction(func)
 
-    def app(scope: Scope) -> ASGIInstance:
+    def app(scope: Scope) -> AsgiInstance:
         async def awaitable(receive: Receiver,
                             send: Sender) -> None:
 

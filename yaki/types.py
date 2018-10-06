@@ -1,16 +1,18 @@
 from typing import Any, Awaitable, Callable, Dict, List, Mapping, Union
 
-# Note the Anys here should be recursive ASGIValue, but are not because
+# Note the Anys here should be recursive AsgiValue, but are not because
 # of mypy's current limitations
-ASGIValue = Union[bytes, str, int, float, List[Any], Dict[str, Any], bool, None]
+AsgiValue = Union[bytes, str, int, float, List[Any], Dict[str, Any], bool, None]
 
-ASGIEvent = Dict[str, ASGIValue]
+AsgiEvent = Dict[str, AsgiValue]
 
-Scope = Mapping[str, ASGIValue]
+Scope = Mapping[str, AsgiValue]
 
-Receiver = Callable[[], Awaitable[ASGIEvent]]
-Sender = Callable[[ASGIEvent], Awaitable[None]]
+Receiver = Callable[[], Awaitable[AsgiEvent]]
+Sender = Callable[[AsgiEvent], Awaitable[None]]
 
-ASGIInstance = Callable[[Receiver, Sender], Awaitable[None]]
 
-ASGIApp = Callable[[Scope], ASGIInstance]
+AsgiInstance = Callable[[Receiver, Sender], Awaitable[None]]
+ScopeAsgiInstance = Callable[[Scope], AsgiInstance]
+
+AsgiApp = Callable[[Scope], AsgiInstance]

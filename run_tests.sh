@@ -3,13 +3,13 @@
 TIME_START=`date +%s`
 
 echo "Running mypy type checks"
-mypy --ignore-missing-imports src || exit $?
+mypy --ignore-missing-imports yaki || exit $?
 
 echo "Running tests with coverage"
 coverage run -m unittest discover tests || exit $?
 
 # this number needs to move up big time. only this low temporarily
-COVERAGE_THRESHOLD=40
+COVERAGE_THRESHOLD=85
 coverage report --fail-under "$COVERAGE_THRESHOLD" > /dev/null 2>&1
 
 COVERAGE_EXIT=$?

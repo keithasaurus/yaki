@@ -9,12 +9,12 @@ from unittest import TestCase
 from yaki.http.app import asgi_to_http_request, http_app, respond
 from yaki.http.request.types import HttpRequest
 from yaki.http.response.types import HttpResponse
-from yaki.types import ASGIEvent
+from yaki.types import AsgiEvent
 
 import asyncio
 
 
-def http_response_to_expected_parts(response: HttpResponse) -> List[ASGIEvent]:
+def http_response_to_expected_parts(response: HttpResponse) -> List[AsgiEvent]:
     expected_body = []
 
     for body_bytes in response.body:
@@ -38,7 +38,7 @@ class RespondTests(TestCase):
     def test_send_gets_multiple_events(self, response):
         result_list = []
 
-        async def sender(event: ASGIEvent) -> None:
+        async def sender(event: AsgiEvent) -> None:
             await asyncio.sleep(0)
             result_list.append(event)
 

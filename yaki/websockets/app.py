@@ -1,5 +1,14 @@
+from functools import partial
 from typing import Awaitable, Callable, Dict, Union
-from yaki.types import ASGIEvent, ASGIInstance, ASGIValue, Receiver, Scope, Sender
+from yaki.types import (
+    AsgiEvent,
+    AsgiInstance,
+    AsgiValue,
+    Receiver,
+    Scope,
+    ScopeAsgiInstance,
+    Sender
+)
 from yaki.websockets.types import (
     WSAccept,
     WSClose,
@@ -13,22 +22,18 @@ from yaki.websockets.types import (
 )
 
 
-async def some_websocket_endpoint(event: WSIncomingEvent) -> WSOutgoingEvent:
-    return WSSend("Some string")
-
-
 def event_to_dict(event_type: str,
-                  event_details: Dict[str, ASGIValue]) -> ASGIEvent:
+                  event_details: Dict[str, AsgiValue]) -> AsgiEvent:
     event_details["type"] = f"websocket.{event_type}"
     return event_details
 
 
-def _ws_send_to_asgi_dict(event: WSSend) -> ASGIEvent:
+def _ws_send_to_asgi_dict(event: WSSend) -> AsgiEvent:
     content_key = "text" if isinstance(event.content, str) else "bytes"
     return event_to_dict("send", {content_key: event.content})
 
 
-def ws_outgoing_to_event_dict(event: WSOutgoingEvent) -> ASGIEvent:
+def ws_outgoing_to_event_dict(event: WSOutgoingEvent) -> AsgiEvent:
     if isinstance(event, WSAccept):
         return event_to_dict("accept", {"subprotocol": event.subprotocol})
     elif isinstance(event, WSSend):
@@ -42,24 +47,31 @@ def ws_outgoing_to_event_dict(event: WSOutgoingEvent) -> ASGIEvent:
     raise TypeError(f"type `{type(event)}` is not a valid WSOutgoingEvent")
 
 
-def _event_to_receive(event: ASGIEvent) -> WSReceive:
+def _event_to_receive(event: AsgiEvent) -> WSReceive:
     str_content = event.get("text")
     content = str_content if str_content is not None else event['bytes']
     assert isinstance(content, (str, bytes))
     return WSReceive(content)
 
 
-def _event_to_disconnect(event: ASGIEvent) -> WSDisconnect:
+def _event_to_disconnect(event: AsgiEvent) -> WSDisconnect:
     code = event["code"]
     assert isinstance(code, int)
     return WSDisconnect(code=code)
 
 
-def ws_incoming_to_datatype(event: ASGIEvent) -> WSIncomingEvent:
-    convert_funcs: Dict[str, Callable[[ASGIEvent], WSIncomingEvent]] = {
+def _event_to_close(event: AsgiEvent) -> WSClose:
+    code = event["code"]
+    assert isinstance(code, int)
+    return WSClose(code=code)
+
+
+def ws_incoming_to_datatype(event: AsgiEvent) -> WSIncomingEvent:
+    convert_funcs: Dict[str, Callable[[AsgiEvent], WSIncomingEvent]] = {
         "connect": lambda x: WSConnect(),
         "receive": _event_to_receive,
-        "disconnect": _event_to_disconnect
+        "disconnect": _event_to_disconnect,
+        "close": _event_to_close
     }
 
     event_type = event['type']
@@ -69,15 +81,19 @@ def ws_incoming_to_datatype(event: ASGIEvent) -> WSIncomingEvent:
     return convert_funcs[event_type](event)
 
 
+ReceiveHandler = Callable[[Scope, WSReceive], Awaitable[WSReceiveOutput]]
+
+
 def ws_app(
         # todo: are these the right output types?
         connect_handler: Callable[[Scope], Awaitable[Union[WSAccept,
                                                            WSDisconnect,
                                                            WSClose]]],
-        receive_handler: Callable[[Scope, WSReceive], Awaitable[WSReceiveOutput]],
-        client_disconnect_handler: Callable[[Scope, WSDisconnect], Awaitable[None]]
-) -> Callable[[Scope], ASGIInstance]:
-    def app(scope: Scope) -> ASGIInstance:
+        receive_handler: ReceiveHandler,
+        client_disconnect_handler: Callable[[Scope, Union[WSDisconnect, WSClose]],
+                                            Awaitable[None]]
+) -> Callable[[Scope], AsgiInstance]:
+    def app(scope: Scope) -> AsgiInstance:
         state: Dict[str, bool] = {
             "client_disconnected": False,
             "app_disconnected": False
@@ -108,7 +124,7 @@ def ws_app(
                     incoming_event: WSIncomingEvent = ws_incoming_to_datatype(
                         await receive())
 
-                    if isinstance(incoming_event, WSDisconnect):
+                    if isinstance(incoming_event, (WSClose, WSDisconnect)):
                         state['client_disconnected'] = True
                         await client_disconnect_handler(scope, incoming_event)
                         return None
@@ -124,4 +140,18 @@ def ws_app(
 
         return awaitable
 
-return app
+    return app
+
+
+async def basic_connect(scope: Scope) -> WSAccept:
+    return WSAccept(subprotocol=None)
+
+
+async def basic_disconnect(scope: Scope, event) -> None:
+    return None
+
+
+ws_app_receiver_only: Callable[[ReceiveHandler], ScopeAsgiInstance] = (
+    partial(ws_app,
+            connect_handler=basic_connect,
+            client_disconnect_handler=basic_disconnect))

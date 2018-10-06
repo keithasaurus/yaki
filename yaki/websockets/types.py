@@ -27,7 +27,7 @@ class WSReceive(NamedTuple):
     content: Union[str, bytes]
 
 
-WSIncomingEvent = Union[WSConnect, WSReceive, WSDisconnect]
+WSIncomingEvent = Union[WSConnect, WSReceive, WSDisconnect, WSClose]
 
 WSOutgoingEvent = Union[WSAccept, WSSend, WSDisconnect, WSClose]
 
