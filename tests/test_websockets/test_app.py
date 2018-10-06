@@ -1,4 +1,4 @@
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis import strategies as st
 from tests.test_websockets.strategies import (
     ws_close,
@@ -51,6 +51,7 @@ def _test_ws_event_sequence(scope: Scope,
 
 class WSAppReceiverOnlyTests(TestCase):
     @given(ws_scope(), ws_connect(), st.lists(ws_receive()), ws_close())
+    @settings(max_examples=20)
     def test_receive_works(self,
                            test_scope,
                            test_connect_event,
@@ -90,6 +91,7 @@ class WSAppReceiverOnlyTests(TestCase):
            ws_connect(),
            st.from_type(WSDisconnect),
            ws_receive())
+    @settings(max_examples=20)
     def test_early_disconnect_stops_everything(self,
                                                test_scope,
                                                test_connect,
@@ -114,6 +116,7 @@ class WSAppReceiverOnlyTests(TestCase):
            ws_connect(),
            st.from_type(WSClose),
            ws_receive())
+    @settings(max_examples=20)
     def test_early_close_stops_everything(self,
                                           test_scope,
                                           test_connect,
