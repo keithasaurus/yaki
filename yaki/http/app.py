@@ -1,7 +1,7 @@
-from src.http.request.types import HostPort, HttpRequest
-from src.http.response.types import HttpDisconnect, HttpResponse
-from src.types import ASGIInstance, ASGIValue, Receiver, Scope, Sender
 from typing import Awaitable, Callable, List, Optional, Tuple, Union
+from yaki.http.request.types import HostPort, HttpRequest
+from yaki.http.response.types import HttpDisconnect, HttpResponse
+from yaki.types import ASGIInstance, ASGIValue, Receiver, Scope, Sender
 
 import asyncio
 
@@ -114,7 +114,7 @@ async def wait_for_request(scope: Scope,
             raise ValueError(f"got unexpected key for type: `{event}`")
 
 
-def request_response(func: HttpViewFunc):
+def http_app(func: HttpViewFunc):
     is_coroutine = asyncio.iscoroutinefunction(func)
 
     def app(scope: Scope) -> ASGIInstance:

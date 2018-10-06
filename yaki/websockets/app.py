@@ -1,5 +1,6 @@
-from src.types import ASGIEvent, ASGIInstance, ASGIValue, Receiver, Scope, Sender
-from src.websockets.types import (
+from typing import Awaitable, Callable, Dict, Union
+from yaki.types import ASGIEvent, ASGIInstance, ASGIValue, Receiver, Scope, Sender
+from yaki.websockets.types import (
     WSAccept,
     WSClose,
     WSConnect,
@@ -7,14 +8,12 @@ from src.websockets.types import (
     WSIncomingEvent,
     WSOutgoingEvent,
     WSReceive,
+    WSReceiveOutput,
     WSSend
 )
-from typing import Awaitable, Callable, Dict, Union
 
 
 async def some_websocket_endpoint(event: WSIncomingEvent) -> WSOutgoingEvent:
-    print("got event:", event)
-
     return WSSend("Some string")
 
 
@@ -70,15 +69,12 @@ def ws_incoming_to_datatype(event: ASGIEvent) -> WSIncomingEvent:
     return convert_funcs[event_type](event)
 
 
-def websocket_endpoint(
+def ws_app(
         # todo: are these the right output types?
-        connect_handler: Callable[[Scope, WSConnect], Awaitable[Union[WSAccept,
-                                                                      WSDisconnect,
-                                                                      WSClose]]],
-        receive_handler: Callable[[Scope, WSReceive], Awaitable[Union[WSSend,
-                                                                      WSDisconnect,
-                                                                      WSClose,
-                                                                      None]]],
+        connect_handler: Callable[[Scope], Awaitable[Union[WSAccept,
+                                                           WSDisconnect,
+                                                           WSClose]]],
+        receive_handler: Callable[[Scope, WSReceive], Awaitable[WSReceiveOutput]],
         client_disconnect_handler: Callable[[Scope, WSDisconnect], Awaitable[None]]
 ) -> Callable[[Scope], ASGIInstance]:
     def app(scope: Scope) -> ASGIInstance:
@@ -98,7 +94,7 @@ def websocket_endpoint(
             connect_event = ws_incoming_to_datatype(await receive())
             assert isinstance(connect_event, WSConnect)
 
-            connect_response = await connect_handler(scope, connect_event)
+            connect_response = await connect_handler(scope)
 
             if not isinstance(connect_response, WSAccept):
                 state["app_disconnected"] = True
@@ -126,8 +122,6 @@ def websocket_endpoint(
                         if outgoing is not None:
                             await send(ws_outgoing_to_event_dict(outgoing))
 
-                        return None
-
         return awaitable
 
-    return app
+return app

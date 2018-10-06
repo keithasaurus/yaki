@@ -1,8 +1,4 @@
 from hypothesis import given, settings
-from src.http.app import asgi_to_http_request, request_response, respond
-from src.http.request.types import HttpRequest
-from src.http.response.types import HttpResponse
-from src.types import ASGIEvent
 from tests.test_http.strategies import (
     asgi_http_request,
     asgi_http_scope,
@@ -10,6 +6,10 @@ from tests.test_http.strategies import (
 )
 from typing import List
 from unittest import TestCase
+from yaki.http.app import asgi_to_http_request, http_app, respond
+from yaki.http.request.types import HttpRequest
+from yaki.http.response.types import HttpResponse
+from yaki.types import ASGIEvent
 
 import asyncio
 
@@ -48,7 +48,7 @@ class RespondTests(TestCase):
                          http_response_to_expected_parts(response))
 
 
-class RequestResponseTest(TestCase):
+class HttpAppTests(TestCase):
     @given(asgi_http_scope(), asgi_http_request(), http_response())
     @settings(max_examples=10)
     def test_sync_view(self, test_scope, test_request, test_response):
@@ -67,7 +67,7 @@ class RequestResponseTest(TestCase):
 
             return test_response
 
-        scoped_app = request_response(test_view)(test_scope)
+        scoped_app = http_app(test_view)(test_scope)
 
         asyncio.run(scoped_app(receive, send))
 
@@ -95,7 +95,7 @@ class RequestResponseTest(TestCase):
 
             return test_response
 
-        scoped_app = request_response(test_view)(test_scope)
+        scoped_app = http_app(test_view)(test_scope)
 
         asyncio.run(scoped_app(receive, send))
 

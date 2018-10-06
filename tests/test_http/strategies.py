@@ -1,45 +1,15 @@
 from hypothesis import strategies as st
-from src.http.response.types import HttpResponse
+from tests.utils.strategies import coinflip, headers, host_and_port, query_string
+from yaki.http.response.types import HttpResponse
 
 import random
-
-
-def coinflip():
-    return random.random() > .5
-
-
-@st.composite
-def query_string(draw):
-    strs = []
-    for _ in range(random.randint(0, 10)):
-        key = draw(st.text(min_size=1,
-                           max_size=30)
-                   .map(lambda x: x.strip())
-                   .filter(lambda x: len(x) > 0))
-        val = draw(st.text(max_size=40))
-        strs.append(f"{key}={val}")
-
-    joined = "&".join(strs)
-    return bytes(joined, encoding="utf8")
-
-
-@st.composite
-def host_and_port(draw):
-    return [st.text(min_size=1), random.randint(1, 10000)]
 
 
 @st.composite
 def asgi_http_scope(draw):
     ret = {
         "type": "http",
-        "headers": draw(
-            st.lists(
-                st.lists(
-                    st.text().map(lambda x: bytes(x.lower(), encoding="utf8")),
-                    min_size=2,
-                    max_size=2),
-                min_size=0,
-                max_size=40)),
+        "headers": draw(headers()),
         "http_version": random.choice(["1.0", "1.1", "1.2"]),
         "method": random.choice(["CONNECT",
                                  "DELETE",

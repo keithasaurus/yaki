@@ -31,6 +31,8 @@ WSIncomingEvent = Union[WSConnect, WSReceive, WSDisconnect]
 
 WSOutgoingEvent = Union[WSAccept, WSSend, WSDisconnect, WSClose]
 
+WSReceiveOutput = Union[WSSend, WSDisconnect, WSClose, None]
+
 
 class WSState(enum.Enum):
     CONNECTING = 0
