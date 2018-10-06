@@ -7,10 +7,9 @@ from src.websockets.types import (
     WSIncomingEvent,
     WSOutgoingEvent,
     WSReceive,
-    WSSend,
-    WSState
+    WSSend
 )
-from typing import Any, Awaitable, Callable, Dict
+from typing import Awaitable, Callable, Dict, Union
 
 
 async def some_websocket_endpoint(event: WSIncomingEvent) -> WSOutgoingEvent:
@@ -71,78 +70,63 @@ def ws_incoming_to_datatype(event: ASGIEvent) -> WSIncomingEvent:
     return convert_funcs[event_type](event)
 
 
-def get_incoming_new_client_state(client_state: WSState,
-                                  event: WSIncomingEvent) -> WSState:
-    if client_state == WSState.CONNECTING:
-        assert isinstance(event, WSConnect)
-        return WSState.CONNECTED
-    elif client_state == WSState.CONNECTED:
-        if isinstance(event, WSDisconnect):
-            return WSState.DISCONNECTED
-        else:
-            assert isinstance(event, WSReceive)
-            return WSState.CONNECTED
-    else:
-        raise RuntimeError('Cannot call "receive" once a disconnect '
-                           'message has been received.')
-
-
-def get_outgoing_new_client_state(client_state: WSState,
-                                  event: WSOutgoingEvent) -> WSState:
-    if client_state == WSState.CONNECTING:
-        if isinstance(event, WSClose):
-            return WSState.DISCONNECTED
-        elif isinstance(event, WSAccept):
-            return WSState.CONNECTING
-        else:
-            raise TypeError("Bad type for connecting")
-
-    elif client_state == WSState.CONNECTED:
-        if isinstance(event, WSSend):
-            return WSState.CONNECTED
-        elif isinstance(event, WSClose):
-            return WSState.DISCONNECTED
-        else:
-            raise TypeError("Bad type for connected")
-    else:
-        raise Exception("Something is wrong!")
-
-
 def websocket_endpoint(
-        func: Callable[[WSIncomingEvent], Awaitable[WSOutgoingEvent]]):
+        # todo: are these the right output types?
+        connect_handler: Callable[[Scope, WSConnect], Awaitable[Union[WSAccept,
+                                                                      WSDisconnect,
+                                                                      WSClose]]],
+        receive_handler: Callable[[Scope, WSReceive], Awaitable[Union[WSSend,
+                                                                      WSDisconnect,
+                                                                      WSClose,
+                                                                      None]]],
+        client_disconnect_handler: Callable[[Scope, WSDisconnect], Awaitable[None]]
+) -> Callable[[Scope], ASGIInstance]:
     def app(scope: Scope) -> ASGIInstance:
-        state: Dict[str, Any] = {
-            "client_state": WSState.CONNECTING,
-            "app_state": WSState.CONNECTING
+        state: Dict[str, bool] = {
+            "client_disconnected": False,
+            "app_disconnected": False
         }
+
+        def app_disconnected() -> bool:
+            return state['app_disconnected']
+
+        def client_disconnected() -> bool:
+            return state['client_disconnected']
 
         async def awaitable(receive: Receiver,
                             send: Sender) -> None:
+            connect_event = ws_incoming_to_datatype(await receive())
+            assert isinstance(connect_event, WSConnect)
 
-            # todo: handle subprotocol
-            await send(ws_outgoing_to_event_dict(WSAccept(None)))
+            connect_response = await connect_handler(scope, connect_event)
 
-            while True:
-                incoming_event_dict: ASGIEvent = await receive()
+            if not isinstance(connect_response, WSAccept):
+                state["app_disconnected"] = True
 
-                incoming_event: WSIncomingEvent = ws_incoming_to_datatype(
-                    incoming_event_dict)
+            await send(ws_outgoing_to_event_dict(connect_response))
 
-                # update client state based on received event
-                state["client_state"] = get_incoming_new_client_state(
-                    state["client_state"],
-                    incoming_event)
+            if app_disconnected():
+                return None
+            else:
+                while not client_disconnected() and not app_disconnected():
+                    incoming_event: WSIncomingEvent = ws_incoming_to_datatype(
+                        await receive())
 
-                outgoing = await func(incoming_event)
+                    if isinstance(incoming_event, WSDisconnect):
+                        state['client_disconnected'] = True
+                        await client_disconnect_handler(scope, incoming_event)
+                        return None
 
-                # update client state to reflect outgoing event
-                state["app_state"] = get_outgoing_new_client_state(
-                    state["app_state"], outgoing)
+                    elif isinstance(incoming_event, WSReceive):
+                        outgoing = await receive_handler(scope, incoming_event)
 
-                await send(ws_outgoing_to_event_dict(outgoing))
+                        if isinstance(outgoing, (WSClose, WSDisconnect)):
+                            state['app_disconnected'] = True
 
-                if state["app_state"] == WSState.DISCONNECTED:
-                    break
+                        if outgoing is not None:
+                            await send(ws_outgoing_to_event_dict(outgoing))
+
+                        return None
 
         return awaitable
 
