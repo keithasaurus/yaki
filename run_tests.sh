@@ -2,11 +2,8 @@
 
 TIME_START=`date +%s`
 
-echo "Running Flake8"
-flake8 . || exit $?
-
 echo "Running mypy type checks"
- mypy --ignore-missing-imports src || exit $?
+mypy --ignore-missing-imports src || exit $?
 
 echo "Running tests with coverage"
 coverage run -m unittest discover tests || exit $?
@@ -28,6 +25,11 @@ then
 fi
 
 coverage erase
+
+
+echo "Running Flake8"
+flake8 . || exit $?
+
 
 TIME_END=`date +%s`
 RUNTIME=$((TIME_END-TIME_START))

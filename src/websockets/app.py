@@ -112,7 +112,8 @@ def websocket_endpoint(
         func: Callable[[WSIncomingEvent], Awaitable[WSOutgoingEvent]]):
     def app(scope: Scope) -> ASGIInstance:
         state: Dict[str, Any] = {
-            "client_state": WSState.CONNECTING
+            "client_state": WSState.CONNECTING,
+            "app_state": WSState.CONNECTING
         }
 
         async def awaitable(receive: Receiver,
@@ -122,25 +123,25 @@ def websocket_endpoint(
             await send(ws_outgoing_to_event_dict(WSAccept(None)))
 
             while True:
-                event_dict: ASGIEvent = await receive()
+                incoming_event_dict: ASGIEvent = await receive()
 
-                event: WSIncomingEvent = ws_incoming_to_datatype(event_dict)
+                incoming_event: WSIncomingEvent = ws_incoming_to_datatype(
+                    incoming_event_dict)
 
                 # update client state based on received event
                 state["client_state"] = get_incoming_new_client_state(
                     state["client_state"],
-                    event)
+                    incoming_event)
 
-                if isinstance(event, WSReceive):
-                    outgoing = await func(event)
+                outgoing = await func(incoming_event)
 
-                    # update client state to reflect outgoing event
-                    state["client_state"] = get_outgoing_new_client_state(
-                        state["client_state"], outgoing)
+                # update client state to reflect outgoing event
+                state["app_state"] = get_outgoing_new_client_state(
+                    state["app_state"], outgoing)
 
-                    await send(ws_outgoing_to_event_dict(outgoing))
+                await send(ws_outgoing_to_event_dict(outgoing))
 
-                if state["client_state"] == WSState.DISCONNECTED:
+                if state["app_state"] == WSState.DISCONNECTED:
                     break
 
         return awaitable

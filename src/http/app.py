@@ -11,24 +11,27 @@ async def respond(response: HttpResponse, send: Sender) -> None:
         {
             "type": "http.response.start",
             "status": response.status_code,
-            "headers": response.headers
+            "headers": [list(x) for x in response.headers]
         }
     )
 
     prev_item = None
+    iterations = 0
 
     for body_item in response.body:
         # send previous because we need to know if there's a future event to send
-        if prev_item is not None:
+        if iterations > 0:
             await send({"type": "http.response.body",
                         "body": prev_item,
                         "more_body": True})
 
         prev_item = body_item
+        iterations += 1
 
-    await send({"type": "http.response.body",
-                "body": prev_item,
-                "more_body": False})
+    if iterations > 0:
+        await send({"type": "http.response.body",
+                    "body": prev_item,
+                    "more_body": False})
 
 
 HttpViewFunc = Union[

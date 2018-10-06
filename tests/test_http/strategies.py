@@ -1,4 +1,5 @@
 from hypothesis import strategies as st
+from src.http.response.types import HttpResponse
 
 import random
 
@@ -80,3 +81,13 @@ def asgi_http_request(draw):
         ret["more_body"] = False
 
     return ret
+
+
+@st.composite
+def http_response(draw):
+    http_response = draw(st.from_type(HttpResponse))
+    # make the iterable a list for the sake of testing... some
+    # iterables can only be consumed once, meaning testing make not
+    # behave the same as the code under test and vice versa
+
+    return http_response._replace(body=list(http_response.body))
