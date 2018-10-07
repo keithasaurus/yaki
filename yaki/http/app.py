@@ -1,7 +1,14 @@
-from typing import Awaitable, Callable, List, Optional, Tuple, Union
-from yaki.http.request.types import HostPort, HttpRequest
+from typing import Awaitable, Callable, Union
+from yaki.http.request.types import HttpRequest
 from yaki.http.response.types import HttpDisconnect, HttpResponse
-from yaki.types import AsgiInstance, AsgiValue, Receiver, Scope, Sender
+from yaki.utils.types import (
+    AsgiInstance,
+    list_headers_to_tuples,
+    list_hostport_to_datatype,
+    Receiver,
+    Scope,
+    Sender
+)
 
 import asyncio
 
@@ -40,35 +47,13 @@ HttpViewFunc = Union[
 ]
 
 
-def _get_hostport(val: Optional[AsgiValue]) -> Optional[HostPort]:
-    if isinstance(val, list) and len(val) == 2:
-        host, port = val
-        if isinstance(host, str) and isinstance(port, int):
-            return HostPort(host=host, port=port)
-    return None
-
-
-def _get_tuple_headers(val: AsgiValue) -> List[Tuple[bytes, bytes]]:
-    headers = []
-
-    if isinstance(val, list):
-        for header_pair in val:
-            if (isinstance(header_pair, list)
-                    and len(header_pair) == 2):
-                k, v = header_pair
-                if isinstance(k, bytes) and isinstance(v, bytes):
-                    headers.append((k, v))
-
-    return headers
-
-
 def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:
     http_version, method, path, query_string = [
         scope.get(k) for k
         in ['http_version',
             'method',
             'path',
-            'query_string', ]
+            'query_string']
     ]
     assert isinstance(path, str)
     assert isinstance(http_version, str)
@@ -81,17 +66,27 @@ def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:
     assert isinstance(scheme, str)
     assert isinstance(root_path, str)
 
+    extensions = scope.get('extensions')
+    if extensions is not None:
+        assert isinstance(extensions, dict)
+
+        for k, v in extensions.items():
+            assert isinstance(k, str)
+            assert isinstance(v, dict)
+
     return HttpRequest(
         body=content,
-        client=_get_hostport(scope.get("client")),
-        headers=_get_tuple_headers(scope['headers']),
+        client=list_hostport_to_datatype(scope.get("client")),
+        extensions=extensions,
+        headers=list_headers_to_tuples(scope['headers']),
         http_version=http_version,
         method=method,
         path=path,
         query_string=query_string,
         root_path=root_path,
         scheme=scheme,
-        server=_get_hostport(scope.get("server"))
+        scope_orig=scope,
+        server=list_hostport_to_datatype(scope.get("server")),
     )
 
 

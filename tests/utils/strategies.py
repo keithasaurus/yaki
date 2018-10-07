@@ -35,4 +35,9 @@ def headers(draw):
 
 @st.composite
 def host_and_port(draw):
-    return [st.text(min_size=1), random.randint(1, 10000)]
+    return [draw(st.text(min_size=1)), random.randint(1, 10000)]
+
+
+@st.composite
+def scope_extensions(draw):
+    return draw(st.dictionaries(st.text(), st.dictionaries(st.text(), st.text())))

@@ -2,8 +2,9 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 from tests.test_websockets.strategies import ws_connect, ws_receive, ws_scope
 from unittest import TestCase
-from yaki.types import AsgiEvent, Scope
+from yaki.utils.types import AsgiEvent, Scope
 from yaki.websockets.app import (
+    asgi_ws_scope_to_datatype,
     ws_app,
     ws_incoming_to_datatype,
     ws_outgoing_to_event_dict
@@ -39,7 +40,7 @@ class WSAppTests(TestCase):
                            test_disconnect] + test_send_events
 
         async def ws_func(scope: Scope, receive, send) -> None:
-            assert scope == test_scope
+            assert scope == asgi_ws_scope_to_datatype(test_scope)
 
             # wait for all incoming events
             for asgi_event in incoming_events:

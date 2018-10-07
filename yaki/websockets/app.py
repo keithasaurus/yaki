@@ -1,5 +1,14 @@
 from typing import Awaitable, Callable, Dict
-from yaki.types import AsgiEvent, AsgiInstance, AsgiValue, Receiver, Scope, Sender
+from yaki.utils.types import (
+    AsgiEvent,
+    AsgiInstance,
+    AsgiValue,
+    list_headers_to_tuples,
+    list_hostport_to_datatype,
+    Receiver,
+    Scope,
+    Sender
+)
 from yaki.websockets.types import (
     WSAccept,
     WSClose,
@@ -8,6 +17,7 @@ from yaki.websockets.types import (
     WSIncomingEvent,
     WSOutgoingEvent,
     WSReceive,
+    WSScope,
     WSSend
 )
 
@@ -84,8 +94,46 @@ TypedReceiver = Callable[[], Awaitable[WSIncomingEvent]]
 TypedSender = Callable[[WSOutgoingEvent], Awaitable[None]]
 
 
+def asgi_ws_scope_to_datatype(scope: AsgiEvent) -> WSScope:
+    path = scope['path']
+    query_string = scope.get('query_string', b"")
+    scheme = scope.get('scheme')
+    root_path = scope.get('root_path')
+    subprotocols = scope.get('subprotocols')
+    extensions = scope.get('extensions')
+
+    assert isinstance(path, str)
+    assert isinstance(query_string, bytes)
+    assert isinstance(scheme, str) or scheme is None
+    assert isinstance(root_path, str) or root_path is None
+
+    if subprotocols is not None:
+        assert isinstance(subprotocols, list)
+        for s in subprotocols:
+            assert isinstance(s, str)
+
+    if extensions is not None:
+        assert isinstance(extensions, dict)
+
+        for k, v in extensions.items():
+            assert isinstance(k, str)
+            assert isinstance(v, dict)
+
+    return WSScope(
+        client=list_hostport_to_datatype(scope.get("client")),
+        headers=list_headers_to_tuples(scope['headers']),
+        orig=scope,
+        path=path,
+        query_string=query_string,
+        root_path=root_path,
+        scheme=scheme,
+        server=list_hostport_to_datatype(scope.get("client")),
+        subprotocols=subprotocols
+    )
+
+
 def ws_app(
-        func: Callable[[Scope, TypedReceiver, TypedSender], Awaitable[None]]
+        func: Callable[[WSScope, TypedReceiver, TypedSender], Awaitable[None]]
 ) -> Callable[[Scope], AsgiInstance]:
     def app(scope: Scope) -> AsgiInstance:
         async def awaitable(receiver: Receiver,
@@ -96,7 +144,9 @@ def ws_app(
             async def wrapped_send(event: WSOutgoingEvent) -> None:
                 await send(ws_outgoing_to_event_dict(event))
 
-            await func(scope, wrapped_receiver, wrapped_send)
+            await func(asgi_ws_scope_to_datatype(scope),
+                       wrapped_receiver,
+                       wrapped_send)
 
         return awaitable
 

@@ -9,7 +9,7 @@ from unittest import TestCase
 from yaki.http.app import asgi_to_http_request, http_app, respond
 from yaki.http.request.types import HttpRequest
 from yaki.http.response.types import HttpResponse
-from yaki.types import AsgiEvent
+from yaki.utils.types import AsgiEvent
 
 import asyncio
 

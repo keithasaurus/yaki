@@ -1,5 +1,11 @@
 from hypothesis import strategies as st
-from tests.utils.strategies import coinflip, headers, host_and_port, query_string
+from tests.utils.strategies import (
+    coinflip,
+    headers,
+    host_and_port,
+    query_string,
+    scope_extensions
+)
 from yaki.http.response.types import HttpResponse
 
 import random
@@ -35,6 +41,9 @@ def asgi_http_scope(draw):
 
     if coinflip():
         ret["root_path"] = draw(st.text())
+
+    if coinflip():
+        ret['extensions'] = draw(scope_extensions())
 
     return ret
 
