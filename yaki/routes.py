@@ -4,12 +4,11 @@ import re
 
 Parser = Callable[[str], Optional[Dict[str, str]]]
 
+
+BRACKET_REGEX_STR = '{[^ {]*}'
+
 # intentionally left vaguer than desired for error reporting
-BRACKET_REGEX_BROAD = re.compile('{[^ {]*}')
-
-BRACKET_REGEX_STRICT_STR = '{[a-z_]+}'
-
-BRACKET_REGEX_STRICT = re.compile(BRACKET_REGEX_STRICT_STR)
+BRACKET_REGEX_BROAD = re.compile(BRACKET_REGEX_STR)
 
 
 def regex_match_to_str_dict(pattern: Pattern, url: str) -> Optional[Dict[str, str]]:
@@ -40,14 +39,14 @@ def bracket_route_parser(url_pattern: str) -> Parser:
     param_names_set = set(param_names)
 
     for name in param_names:
-        assert re.match(BRACKET_REGEX_STRICT, name), (
+        assert name[1:-1].isidentifier(), (
             f"{name} is an invalid name for a url parameter")
 
     assert len(param_names) == len(param_names_set), (
         "duplicate parameter names are not allowed")
 
     # replace the brackets with capturing regexes
-    split_strs = re.split(f'({BRACKET_REGEX_STRICT_STR})', url_pattern)
+    split_strs = re.split(f'({BRACKET_REGEX_STR})', url_pattern)
 
     processed = [
         (to_capturing_bracket_param(s[1:-1]) if s in param_names_set

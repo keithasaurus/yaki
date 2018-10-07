@@ -41,3 +41,15 @@ class BracketRouteParserTests(TestCase):
             {"name": "keith",
              "city": "jackson",
              "_state_thing": "MI1.chag---an"})
+
+    def test_does_not_allow_duplicate_names(self):
+        with self.assertRaises(AssertionError):
+            bracket_route_parser("/{name}/{name}")
+
+    def test_param_must_have_valid_name(self):
+        for invalid_pattern in [
+            "{}",  # no arg_length
+            "{.}",  # no period arg name
+        ]:
+            with self.assertRaises(AssertionError):
+                bracket_route_parser(invalid_pattern)
