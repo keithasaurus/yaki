@@ -1,14 +1,5 @@
-from functools import partial
-from typing import Awaitable, Callable, Dict, Union
-from yaki.types import (
-    AsgiEvent,
-    AsgiInstance,
-    AsgiValue,
-    Receiver,
-    Scope,
-    ScopeAsgiInstance,
-    Sender
-)
+from typing import Awaitable, Callable, Dict
+from yaki.types import AsgiEvent, AsgiInstance, AsgiValue, Receiver, Scope, Sender
 from yaki.websockets.types import (
     WSAccept,
     WSClose,
@@ -17,7 +8,6 @@ from yaki.websockets.types import (
     WSIncomingEvent,
     WSOutgoingEvent,
     WSReceive,
-    WSReceiveOutput,
     WSSend
 )
 
@@ -89,77 +79,25 @@ def ws_incoming_to_datatype(event: AsgiEvent) -> WSIncomingEvent:
     return convert_funcs[event_type](event)
 
 
-ReceiveHandler = Callable[[Scope, WSReceive], Awaitable[WSReceiveOutput]]
+TypedReceiver = Callable[[], Awaitable[WSIncomingEvent]]
+
+TypedSender = Callable[[WSOutgoingEvent], Awaitable[None]]
 
 
 def ws_app(
-        # todo: are these the right output types?
-        connect_handler: Callable[[Scope], Awaitable[Union[WSAccept,
-                                                           WSDisconnect,
-                                                           WSClose]]],
-        receive_handler: ReceiveHandler,
-        client_disconnect_handler: Callable[[Scope, Union[WSDisconnect, WSClose]],
-                                            Awaitable[None]]
+        func: Callable[[Scope, TypedReceiver, TypedSender], Awaitable[None]]
 ) -> Callable[[Scope], AsgiInstance]:
     def app(scope: Scope) -> AsgiInstance:
-        state: Dict[str, bool] = {
-            "client_disconnected": False,
-            "app_disconnected": False
-        }
-
-        def app_disconnected() -> bool:
-            return state['app_disconnected']
-
-        def client_disconnected() -> bool:
-            return state['client_disconnected']
-
-        async def awaitable(receive: Receiver,
+        async def awaitable(receiver: Receiver,
                             send: Sender) -> None:
-            connect_event = ws_incoming_to_datatype(await receive())
-            assert isinstance(connect_event, WSConnect)
+            async def wrapped_receiver() -> WSIncomingEvent:
+                return ws_incoming_to_datatype(await receiver())
 
-            connect_response = await connect_handler(scope)
+            async def wrapped_send(event: WSOutgoingEvent) -> None:
+                await send(ws_outgoing_to_event_dict(event))
 
-            if not isinstance(connect_response, WSAccept):
-                state["app_disconnected"] = True
-
-            await send(ws_outgoing_to_event_dict(connect_response))
-
-            if app_disconnected():
-                return None
-            else:
-                while not client_disconnected() and not app_disconnected():
-                    incoming_event: WSIncomingEvent = ws_incoming_to_datatype(
-                        await receive())
-
-                    if isinstance(incoming_event, (WSClose, WSDisconnect)):
-                        state['client_disconnected'] = True
-                        await client_disconnect_handler(scope, incoming_event)
-                        return None
-
-                    elif isinstance(incoming_event, WSReceive):
-                        outgoing = await receive_handler(scope, incoming_event)
-
-                        if isinstance(outgoing, (WSClose, WSDisconnect)):
-                            state['app_disconnected'] = True
-
-                        if outgoing is not None:
-                            await send(ws_outgoing_to_event_dict(outgoing))
+            await func(scope, wrapped_receiver, wrapped_send)
 
         return awaitable
 
     return app
-
-
-async def connect_accept(scope: Scope) -> WSAccept:
-    return WSAccept(subprotocol=None)
-
-
-async def disconnect_noop(scope: Scope, event) -> None:
-    return None
-
-
-ws_app_receiver_only: Callable[[ReceiveHandler], ScopeAsgiInstance] = (
-    partial(ws_app,
-            connect_handler=connect_accept,
-            client_disconnect_handler=disconnect_noop))

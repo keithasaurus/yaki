@@ -1,7 +1,5 @@
 from typing import NamedTuple, Optional, Union
 
-import enum
-
 
 class WSConnect(NamedTuple):
     pass
@@ -30,16 +28,3 @@ class WSReceive(NamedTuple):
 WSIncomingEvent = Union[WSConnect, WSReceive, WSDisconnect, WSClose]
 
 WSOutgoingEvent = Union[WSAccept, WSSend, WSDisconnect, WSClose]
-
-WSReceiveOutput = Union[WSSend, WSDisconnect, WSClose, None]
-
-
-class WSState(enum.Enum):
-    CONNECTING = 0
-    CONNECTED = 1
-    DISCONNECTED = 2
-
-
-INCOMING_CLIENT_STATES = {
-    WSState.CONNECTING: {"connect"},
-}
