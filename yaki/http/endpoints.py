@@ -1,4 +1,4 @@
-from typing import Awaitable, Callable, Union
+from typing import Union
 from yaki.http.types import HttpDisconnect, HttpRequest, HttpResponse, HttpViewFunc
 from yaki.utils.types import (
     AsgiInstance,

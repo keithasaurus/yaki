@@ -1,4 +1,4 @@
-from typing import Awaitable, Callable, Dict
+from typing import Callable, Dict
 from yaki.utils.types import (
     AsgiEvent,
     AsgiInstance,

@@ -7,7 +7,7 @@ from tests.test_http.strategies import (
 from typing import List
 from unittest import TestCase
 from yaki.http.endpoints import asgi_to_http_request, http_endpoint, respond
-from yaki.http.types import HttpResponse, HttpRequest
+from yaki.http.types import HttpRequest, HttpResponse
 from yaki.utils.types import AsgiEvent
 
 import asyncio
@@ -47,7 +47,7 @@ class RespondTests(TestCase):
                          http_response_to_expected_parts(response))
 
 
-class HttpAppTests(TestCase):
+class HttpEndpointTests(TestCase):
     @given(asgi_http_scope(), asgi_http_request(), http_response())
     @settings(max_examples=10)
     def test_async_view(self, test_scope, test_request, test_response):

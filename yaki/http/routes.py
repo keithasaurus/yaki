@@ -1,5 +1,6 @@
 from functools import partial
 from yaki.http.endpoints import http_endpoint
+from yaki.http.middleware import combine_middleware
 from yaki.http.types import HttpConfig
 from yaki.http.views import http_404_view
 from yaki.utils.types import Scope
@@ -18,11 +19,9 @@ def route_http(config: HttpConfig, scope: Scope):
                 view_func = partial(view_func, route_match_result)
             break
     else:
-       view_func = http_404_view
+        view_func = http_404_view
 
-    middleware_and_view_func = view_func
-    for middleware_func in config.middleware[::-1]:
-        middleware_and_view_func = partial(middleware_func,
-                                           middleware_and_view_func)
+    middleware_and_view_func = combine_middleware(config.middleware,
+                                                  view_func)
 
     return http_endpoint(middleware_and_view_func)(scope)

@@ -14,7 +14,7 @@ from yaki.websockets.types import WSAccept, WSClose, WSDisconnect, WSSend
 import asyncio
 
 
-class WSAppTests(TestCase):
+class WSEndpointTests(TestCase):
     @given(ws_scope(),
            ws_connect(),
            st.lists(ws_receive()),

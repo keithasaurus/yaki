@@ -23,10 +23,15 @@ def query_string(draw):
 
 
 @st.composite
+def header_string(draw):
+    return draw(st.text().map(lambda x: bytes(x.lower(), encoding="utf8")))
+
+
+@st.composite
 def headers(draw):
     return draw(st.lists(
         st.lists(
-            st.text().map(lambda x: bytes(x.lower(), encoding="utf8")),
+            header_string(),
             min_size=2,
             max_size=2),
         min_size=0,
