@@ -1,6 +1,6 @@
-from hypothesis import given
-from hypothesis import strategies as st
-from tests.test_http.strategies import http_request_named_tuple
+from hypothesis import given, settings
+from tests.test_http.strategies import http_request_named_tuple, \
+    http_response_named_tuple
 from unittest import TestCase
 from yaki.http.middleware import combine_middleware
 from yaki.http.types import HttpRequest, HttpResponse, HttpViewFunc
@@ -10,7 +10,8 @@ import asyncio
 
 class CombineMiddlewareTests(TestCase):
     @given(http_request_named_tuple(),
-           st.from_type(HttpResponse))
+           http_response_named_tuple())
+    @settings(max_examples=30)
     def test_executes_in_filo_order(self, test_request, test_response):
         events = []
 

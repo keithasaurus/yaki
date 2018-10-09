@@ -24,7 +24,9 @@ def query_string(draw):
 
 @st.composite
 def header_string(draw):
-    return draw(st.text().map(lambda x: bytes(x.lower(), encoding="utf8")))
+    return draw(
+        st.text(max_size=1000).map(lambda x: bytes(x.lower(), encoding="utf8"))
+    )
 
 
 @st.composite
@@ -45,4 +47,8 @@ def host_and_port(draw):
 
 @st.composite
 def scope_extensions(draw):
-    return draw(st.dictionaries(st.text(), st.dictionaries(st.text(), st.text())))
+    return draw(st.dictionaries(st.text(),
+                                st.dictionaries(st.text(),
+                                                st.text(),
+                                                max_size=20),
+                                max_size=20))

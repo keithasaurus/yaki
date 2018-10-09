@@ -36,7 +36,7 @@ def asgi_http_scope(draw):
         "headers": draw(headers()),
         "http_version": gen_http_version(),
         "method": gen_http_method(),
-        "path": "/" + draw(st.text()),
+        "path": "/" + draw(st.text(max_size=1000)),
         "query_string": draw(query_string()),
     }
 
@@ -61,7 +61,7 @@ def asgi_http_scope(draw):
 @st.composite
 def asgi_http_request(draw):
     ret = {"type": "http.request",
-           "body": bytes(draw(st.text()), encoding="utf8"),
+           "body": bytes(draw(st.text(max_size=10000)), encoding="utf8"),
            "more_body": False}
 
     # todo: return multiple requests with only the
@@ -73,13 +73,21 @@ def asgi_http_request(draw):
 
 
 @st.composite
-def http_response(draw):
-    http_response = draw(st.from_type(HttpResponse))
-    # make the iterable a list for the sake of testing... some
-    # iterables can only be consumed once, meaning testing make not
-    # behave the same as the code under test and vice versa
-
-    return http_response._replace(body=list(http_response.body))
+def http_response_named_tuple(draw):
+    return HttpResponse(
+        status_code=draw(st.integers()),
+        # make the iterable a list for the sake of testing... some
+        # iterables can only be consumed once, meaning testing make not
+        # behave the same as the code under test and vice versa
+        body=draw(
+            st.lists(
+                st.text(max_size=1000).map(lambda x: bytes(x.lower(),
+                                                           encoding="utf8")),
+                max_size=40
+            )
+        ),
+        headers=draw(headers())
+    )
 
 
 @st.composite
@@ -88,13 +96,14 @@ def http_request_named_tuple(draw):
         body=draw(st.binary()),
         client=draw(st.from_type(HostPort)) if coinflip() else None,
         extensions=draw(scope_extensions()) if coinflip() else None,
-        headers=draw(st.lists(st.tuples(header_string(), header_string()))),
+        headers=draw(st.lists(st.tuples(header_string(), header_string()),
+                              max_size=60)),
         http_version=gen_http_version(),
         method=gen_http_method(),
-        path=draw(st.text()),
+        path=draw(st.text(max_size=1000)),
         query_string=draw(query_string()),
-        root_path=draw(st.text()),
-        scheme=draw(st.text(min_size=1)),
+        root_path=draw(st.text(max_size=1000)),
+        scheme=draw(st.text(min_size=1, max_size=5)),
         scope_orig=draw(asgi_http_scope()),
         server=draw(st.from_type(HostPort)) if coinflip() else None
     )

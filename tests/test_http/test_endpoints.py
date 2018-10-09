@@ -2,7 +2,7 @@ from hypothesis import given, settings
 from tests.test_http.strategies import (
     asgi_http_request,
     asgi_http_scope,
-    http_response
+    http_response_named_tuple
 )
 from typing import List
 from unittest import TestCase
@@ -33,7 +33,8 @@ def http_response_to_expected_parts(response: HttpResponse) -> List[AsgiEvent]:
 
 
 class RespondTests(TestCase):
-    @given(http_response())
+    @given(http_response_named_tuple())
+    @settings(max_examples=30)
     def test_send_gets_multiple_events(self, response):
         result_list = []
 
@@ -48,8 +49,8 @@ class RespondTests(TestCase):
 
 
 class HttpEndpointTests(TestCase):
-    @given(asgi_http_scope(), asgi_http_request(), http_response())
-    @settings(max_examples=10)
+    @given(asgi_http_scope(), asgi_http_request(), http_response_named_tuple())
+    @settings(max_examples=30)
     def test_async_view(self, test_scope, test_request, test_response):
         async def receive():
             await asyncio.sleep(0)
