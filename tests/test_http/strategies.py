@@ -31,7 +31,7 @@ def gen_http_method():
 
 @st.composite
 def asgi_http_scope(draw):
-    ret = {
+    scope = {
         "type": "http",
         "headers": draw(headers()),
         "http_version": gen_http_version(),
@@ -40,22 +40,17 @@ def asgi_http_scope(draw):
         "query_string": draw(query_string()),
     }
 
-    if coinflip():
-        ret['client'] = draw(host_and_port())
+    scope.update({
+        name: draw(gen_func) for name, gen_func in
+        [('client', host_and_port()),
+         ('server', host_and_port()),
+         ('scheme', st.text(min_size=1)),
+         ('root_path', st.text(max_size=100)),
+         ('extensions', scope_extensions())
+         ] if coinflip()
+    })
 
-    if coinflip():
-        ret['server'] = draw(host_and_port())
-
-    if coinflip():
-        ret["scheme"] = draw(st.text(min_size=1))
-
-    if coinflip():
-        ret["root_path"] = draw(st.text())
-
-    if coinflip():
-        ret['extensions'] = draw(scope_extensions())
-
-    return ret
+    return scope
 
 
 @st.composite

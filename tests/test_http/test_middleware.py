@@ -1,6 +1,8 @@
 from hypothesis import given, settings
-from tests.test_http.strategies import http_request_named_tuple, \
+from tests.test_http.strategies import (
+    http_request_named_tuple,
     http_response_named_tuple
+)
 from unittest import TestCase
 from yaki.http.middleware import combine_middleware
 from yaki.http.types import HttpRequest, HttpResponse, HttpViewFunc

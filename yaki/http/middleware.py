@@ -1,9 +1,6 @@
 from functools import partial
 from typing import Tuple
-from yaki.http.types import (
-    HttpMiddlewareFunc,
-    HttpViewFunc
-)
+from yaki.http.types import HttpMiddlewareFunc, HttpViewFunc
 
 
 def combine_middleware(middleware: Tuple[HttpMiddlewareFunc, ...],
