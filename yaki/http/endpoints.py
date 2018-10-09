@@ -1,6 +1,5 @@
 from typing import Awaitable, Callable, Union
-from yaki.http.request.types import HttpRequest
-from yaki.http.response.types import HttpDisconnect, HttpResponse
+from yaki.http.types import HttpDisconnect, HttpRequest, HttpResponse, HttpViewFunc
 from yaki.utils.types import (
     AsgiInstance,
     list_headers_to_tuples,
@@ -37,9 +36,6 @@ async def respond(response: HttpResponse, send: Sender) -> None:
         await send({"type": "http.response.body",
                     "body": prev_item,
                     "more_body": False})
-
-
-HttpViewFunc = Union[Callable[[HttpRequest], Awaitable[HttpResponse]]]
 
 
 def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:
@@ -104,7 +100,7 @@ async def wait_for_request(scope: Scope,
             raise ValueError(f"got unexpected key for type: `{event}`")
 
 
-def http_app(func: HttpViewFunc):
+def http_endpoint(func: HttpViewFunc):
     def app(scope: Scope) -> AsgiInstance:
         async def awaitable(receive: Receiver,
                             send: Sender) -> None:

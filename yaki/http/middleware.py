@@ -1,6 +1,5 @@
 from datetime import datetime
-
-from yaki import HttpViewFunc, HttpRequest, HttpResponse
+from yaki.http.types import HttpRequest, HttpResponse, HttpViewFunc
 
 
 async def logging_middleware(view_func: HttpViewFunc,

@@ -1,4 +1,4 @@
-from yaki import HttpResponse, HttpRequest
+from yaki.http.types import HttpRequest, HttpResponse
 
 
 async def http_404_view(request: HttpRequest):

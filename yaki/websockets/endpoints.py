@@ -18,7 +18,8 @@ from yaki.websockets.types import (
     WSOutgoingEvent,
     WSReceive,
     WSScope,
-    WSSend
+    WSSend,
+    WSViewFunc
 )
 
 
@@ -89,11 +90,6 @@ def ws_incoming_to_datatype(event: AsgiEvent) -> WSIncomingEvent:
     return convert_funcs[event_type](event)
 
 
-TypedReceiver = Callable[[], Awaitable[WSIncomingEvent]]
-
-TypedSender = Callable[[WSOutgoingEvent], Awaitable[None]]
-
-
 def asgi_ws_scope_to_datatype(scope: AsgiEvent) -> WSScope:
     path = scope['path']
     query_string = scope.get('query_string', b"")
@@ -132,10 +128,7 @@ def asgi_ws_scope_to_datatype(scope: AsgiEvent) -> WSScope:
     )
 
 
-WSViewFunc = Callable[[WSScope, TypedReceiver, TypedSender], Awaitable[None]]
-
-
-def ws_app(func: WSViewFunc) -> Callable[[Scope], AsgiInstance]:
+def ws_endpoint(func: WSViewFunc) -> Callable[[Scope], AsgiInstance]:
     def app(scope: Scope) -> AsgiInstance:
         async def awaitable(receiver: Receiver,
                             send: Sender) -> None:

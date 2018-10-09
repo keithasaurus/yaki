@@ -1,4 +1,5 @@
-from typing import List, NamedTuple, Optional, Tuple, Union
+from typing import Awaitable, Callable, List, NamedTuple, Optional, Tuple, Union
+from yaki.routes import RouteMatcher
 from yaki.utils.types import AsgiEvent, HostPort
 
 
@@ -41,3 +42,15 @@ class WSScope(NamedTuple):
 WSIncomingEvent = Union[WSConnect, WSReceive, WSDisconnect, WSClose]
 
 WSOutgoingEvent = Union[WSAccept, WSSend, WSDisconnect, WSClose]
+
+
+TypedReceiver = Callable[[], Awaitable[WSIncomingEvent]]
+
+TypedSender = Callable[[WSOutgoingEvent], Awaitable[None]]
+
+
+WSViewFunc = Callable[[WSScope, TypedReceiver, TypedSender], Awaitable[None]]
+
+
+class WSConfig(NamedTuple):
+    routes: List[Tuple[RouteMatcher, WSViewFunc]]

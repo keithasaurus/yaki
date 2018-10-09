@@ -6,9 +6,8 @@ from tests.test_http.strategies import (
 )
 from typing import List
 from unittest import TestCase
-from yaki.http.app import asgi_to_http_request, http_app, respond
-from yaki.http.request.types import HttpRequest
-from yaki.http.response.types import HttpResponse
+from yaki.http.endpoints import asgi_to_http_request, http_endpoint, respond
+from yaki.http.types import HttpResponse, HttpRequest
 from yaki.utils.types import AsgiEvent
 
 import asyncio
@@ -70,7 +69,7 @@ class HttpAppTests(TestCase):
 
             return test_response
 
-        scoped_app = http_app(test_view)(test_scope)
+        scoped_app = http_endpoint(test_view)(test_scope)
 
         asyncio.run(scoped_app(receive, send))
 

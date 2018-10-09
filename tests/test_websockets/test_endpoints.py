@@ -3,9 +3,9 @@ from hypothesis import strategies as st
 from tests.test_websockets.strategies import ws_connect, ws_receive, ws_scope
 from unittest import TestCase
 from yaki.utils.types import AsgiEvent, Scope
-from yaki.websockets.app import (
+from yaki.websockets.endpoints import (
     asgi_ws_scope_to_datatype,
-    ws_app,
+    ws_endpoint,
     ws_incoming_to_datatype,
     ws_outgoing_to_event_dict
 )
@@ -61,7 +61,7 @@ class WSAppTests(TestCase):
         async def send(event: AsgiEvent) -> None:
             send_destination.append(event)
 
-        scoped_app = ws_app(ws_func)(test_scope)
+        scoped_app = ws_endpoint(ws_func)(test_scope)
 
         asyncio.run(scoped_app(receive, send))
 

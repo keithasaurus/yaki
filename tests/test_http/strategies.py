@@ -6,9 +6,10 @@ from tests.utils.strategies import (
     query_string,
     scope_extensions
 )
-from yaki.http.response.types import HttpResponse
 
 import random
+
+from yaki.http.types import HttpResponse
 
 
 @st.composite
