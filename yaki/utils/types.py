@@ -44,7 +44,7 @@ def list_headers_to_tuples(val: AsgiValue) -> List[Tuple[bytes, bytes]]:
     assert isinstance(val, list)
 
     for header_pair in val:
-        assert isinstance(header_pair, list)
+        assert isinstance(header_pair, (list, tuple))
         assert len(header_pair) == 2
         k, v = header_pair
         assert isinstance(k, bytes)
@@ -61,7 +61,7 @@ def list_hostport_to_datatype(val: Optional[AsgiValue]) -> Optional[HostPort]:
     if val is None:
         return None
     else:
-        assert isinstance(val, list)
+        assert isinstance(val, (list, tuple))
         assert len(val) == 2
         host, port = val
         assert isinstance(host, str)

@@ -51,31 +51,6 @@ class RespondTests(TestCase):
 class HttpAppTests(TestCase):
     @given(asgi_http_scope(), asgi_http_request(), http_response())
     @settings(max_examples=10)
-    def test_sync_view(self, test_scope, test_request, test_response):
-        async def receive():
-            await asyncio.sleep(0)
-            return test_request
-
-        result = []
-
-        async def send(response: HttpResponse) -> None:
-            result.append(response)
-
-        def test_view(request: HttpRequest) -> HttpResponse:
-            assert request == asgi_to_http_request(test_request["body"],
-                                                   test_scope)
-
-            return test_response
-
-        scoped_app = http_app(test_view)(test_scope)
-
-        asyncio.run(scoped_app(receive, send))
-
-        self.assertEqual(result,
-                         http_response_to_expected_parts(test_response))
-
-    @given(asgi_http_scope(), asgi_http_request(), http_response())
-    @settings(max_examples=10)
     def test_async_view(self, test_scope, test_request, test_response):
         async def receive():
             await asyncio.sleep(0)

@@ -1,5 +1,5 @@
 from unittest import TestCase
-from yaki.routes import bracket_route_parser, regex_match_to_str_dict
+from yaki.routes import bracket_route_matcher, regex_match_to_str_dict
 
 import re
 
@@ -25,26 +25,26 @@ class RegexMatchTest(TestCase):
         self.assertIsNone(result)
 
 
-class BracketRouteParserTests(TestCase):
+class BracketRouteMatcherTests(TestCase):
     def test_works_without_brackets(self):
         test_str = "/something"
-        parser = bracket_route_parser(test_str)
+        matcher = bracket_route_matcher(test_str)
 
-        self.assertEqual({}, parser(test_str))
+        self.assertEqual({}, matcher(test_str))
 
     def test_works_with_brackets(self):
         url_pattern = "/some/{name}/and/{city}/and{_state_thing}"
-        parser = bracket_route_parser(url_pattern)
+        matcher = bracket_route_matcher(url_pattern)
 
         self.assertEqual(
-            parser("/some/keith/and/jackson/andMI1.chag---an"),
+            matcher("/some/keith/and/jackson/andMI1.chag---an"),
             {"name": "keith",
              "city": "jackson",
              "_state_thing": "MI1.chag---an"})
 
     def test_does_not_allow_duplicate_names(self):
         with self.assertRaises(AssertionError):
-            bracket_route_parser("/{name}/{name}")
+            bracket_route_matcher("/{name}/{name}")
 
     def test_param_must_have_valid_name(self):
         for invalid_pattern in [
@@ -52,4 +52,10 @@ class BracketRouteParserTests(TestCase):
             "{.}",  # no period arg name
         ]:
             with self.assertRaises(AssertionError):
-                bracket_route_parser(invalid_pattern)
+                bracket_route_matcher(invalid_pattern)
+
+    def test_end_must_match(self):
+        matcher = bracket_route_matcher("/")
+
+        self.assertIsInstance(matcher("/"), dict)
+        self.assertIsNone(matcher("/a"))

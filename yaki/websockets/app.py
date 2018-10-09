@@ -132,9 +132,10 @@ def asgi_ws_scope_to_datatype(scope: AsgiEvent) -> WSScope:
     )
 
 
-def ws_app(
-        func: Callable[[WSScope, TypedReceiver, TypedSender], Awaitable[None]]
-) -> Callable[[Scope], AsgiInstance]:
+WSViewFunc = Callable[[WSScope, TypedReceiver, TypedSender], Awaitable[None]]
+
+
+def ws_app(func: WSViewFunc) -> Callable[[Scope], AsgiInstance]:
     def app(scope: Scope) -> AsgiInstance:
         async def awaitable(receiver: Receiver,
                             send: Sender) -> None:

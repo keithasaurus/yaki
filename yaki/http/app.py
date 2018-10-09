@@ -10,8 +10,6 @@ from yaki.utils.types import (
     Sender
 )
 
-import asyncio
-
 
 async def respond(response: HttpResponse, send: Sender) -> None:
     await send(
@@ -41,10 +39,7 @@ async def respond(response: HttpResponse, send: Sender) -> None:
                     "more_body": False})
 
 
-HttpViewFunc = Union[
-    Callable[[HttpRequest], Awaitable[HttpResponse]],
-    Callable[[HttpRequest], HttpResponse],
-]
+HttpViewFunc = Union[Callable[[HttpRequest], Awaitable[HttpResponse]]]
 
 
 def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:
@@ -110,8 +105,6 @@ async def wait_for_request(scope: Scope,
 
 
 def http_app(func: HttpViewFunc):
-    is_coroutine = asyncio.iscoroutinefunction(func)
-
     def app(scope: Scope) -> AsgiInstance:
         async def awaitable(receive: Receiver,
                             send: Sender) -> None:
@@ -119,11 +112,7 @@ def http_app(func: HttpViewFunc):
             request_result = await wait_for_request(scope, receive)
 
             if isinstance(request_result, HttpRequest):
-                if is_coroutine:
-                    # ignoring because cannot signify to mypy that this is safe
-                    response = await func(request_result)  # type: ignore
-                else:
-                    response = func(request_result)
+                response = await func(request_result)
                 await respond(response, send)
             else:
                 # todo: handle

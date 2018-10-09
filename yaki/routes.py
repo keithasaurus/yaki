@@ -2,7 +2,7 @@ from typing import Callable, Dict, Optional, Pattern
 
 import re
 
-Parser = Callable[[str], Optional[Dict[str, str]]]
+RouteMatcher = Callable[[str], Optional[Dict[str, str]]]
 
 
 BRACKET_REGEX_STR = '{[^ {]*}'
@@ -22,7 +22,7 @@ def regex_match_to_str_dict(pattern: Pattern, url: str) -> Optional[Dict[str, st
         }
 
 
-def regex_route_parser(pattern: Pattern) -> Parser:
+def regex_route_matcher(pattern: Pattern) -> RouteMatcher:
     def inner(url: str):
         return regex_match_to_str_dict(pattern, url)
 
@@ -33,7 +33,7 @@ def to_capturing_bracket_param(arg_name: str) -> str:
     return f'(?P<{arg_name}>.+)'
 
 
-def bracket_route_parser(url_pattern: str) -> Parser:
+def bracket_route_matcher(url_pattern: str) -> RouteMatcher:
     param_names = re.findall(BRACKET_REGEX_BROAD, url_pattern)
 
     param_names_set = set(param_names)
@@ -54,4 +54,6 @@ def bracket_route_parser(url_pattern: str) -> Parser:
         for s in split_strs
     ]
 
-    return regex_route_parser(re.compile("".join(processed)))
+    processed_str = "".join(processed)
+
+    return regex_route_matcher(re.compile(f'^{processed_str}$'))
