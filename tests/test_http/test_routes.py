@@ -11,7 +11,12 @@ from typing import Callable
 from unittest import TestCase
 from yaki.http.endpoints import asgi_to_http_request
 from yaki.http.routes import method_view_to_view_func, normalize_routes, route_http
-from yaki.http.types import HttpConfig, HttpRequest, HttpResponse, HttpViewFunc
+from yaki.http.types import (
+    HttpConfig,
+    HttpRequest,
+    HttpRequestResponseView,
+    HttpResponse
+)
 from yaki.http.utils.status import DELETE, GET, POST, PUT
 from yaki.http.views import DEFAULT_404_RESPONSE, DEFAULT_405_RESPONSE
 from yaki.routing.matchers import bracket_route_matcher, regex_route_matcher
@@ -39,7 +44,7 @@ class RouteHttpTests(TestCase):
 
         result_target = []
 
-        async def middleware_func(view_func: HttpViewFunc,
+        async def middleware_func(view_func: HttpRequestResponseView,
                                   request: HttpRequest) -> HttpResponse:
             self.assertEqual(request, request_named_tuple)
             result_target.append('middleware was run')

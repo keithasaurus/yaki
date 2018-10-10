@@ -1,3 +1,4 @@
+from mypy_extensions import Arg
 from typing import (
     Any,
     Awaitable,
@@ -41,16 +42,21 @@ class HttpDisconnect(NamedTuple):
     pass
 
 
-HttpViewFunc = Callable[[HttpRequest], Awaitable[HttpResponse]]
+# Just the request and response
+HttpRequestResponseView = Callable[[HttpRequest], Awaitable[HttpResponse]]
 
+HttpView = Union[
+    Callable[[HttpRequest, Arg(str)], Awaitable[HttpResponse]],
+    HttpRequestResponseView
+]
 
 # if the route is just a view it accepts all methods.
 # If it's a dict, it's the specified method(s)
-HttpMethodView = Union[HttpViewFunc, Dict[str, HttpViewFunc]]
+HttpMethodView = Union[HttpView, Dict[str, HttpView]]
 
 HttpRoute = Tuple[RouteMatcher, HttpMethodView]
 
-HttpProtoRouteThreeTuple = Tuple[MatcherOrStr, Set[str], HttpViewFunc]
+HttpProtoRouteThreeTuple = Tuple[MatcherOrStr, Set[str], HttpView]
 HttpProtoRouteTwoTuple = Tuple[MatcherOrStr, HttpMethodView]
 
 HttpProtoRoute = Union[
@@ -59,7 +65,8 @@ HttpProtoRoute = Union[
 ]
 
 
-HttpMiddlewareFunc = Callable[[HttpViewFunc, HttpRequest], Awaitable[HttpResponse]]
+HttpMiddlewareFunc = Callable[[HttpRequestResponseView, HttpRequest],
+                              Awaitable[HttpResponse]]
 
 
 class HttpConfig(NamedTuple):

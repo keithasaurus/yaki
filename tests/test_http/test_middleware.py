@@ -10,7 +10,7 @@ from yaki.http.middleware import (
     combine_middleware,
     exception_500_middleware_default_response
 )
-from yaki.http.types import HttpRequest, HttpResponse, HttpViewFunc
+from yaki.http.types import HttpRequest, HttpRequestResponseView, HttpResponse
 
 import asyncio
 import logging
@@ -23,7 +23,7 @@ class CombineMiddlewareTests(TestCase):
     def test_executes_in_filo_order(self, test_request, test_response):
         events = []
 
-        async def middleware_1(view_func: HttpViewFunc,
+        async def middleware_1(view_func: HttpRequestResponseView,
                                request: HttpRequest) -> HttpResponse:
             events.append(1)
 
@@ -33,7 +33,7 @@ class CombineMiddlewareTests(TestCase):
 
             return response
 
-        async def middleware_2(view_func: HttpViewFunc,
+        async def middleware_2(view_func: HttpRequestResponseView,
                                request: HttpRequest) -> HttpResponse:
             events.append('b')
             response = await view_func(request)
@@ -41,15 +41,12 @@ class CombineMiddlewareTests(TestCase):
             events.append('c')
             return response
 
-        async def view_func(request: HttpRequest):
+        async def view(request: HttpRequest):
             events.append('the view happened')
 
             return test_response
 
-        combined_func = combine_middleware(
-            (middleware_1, middleware_2),
-            view_func
-        )
+        combined_func = combine_middleware((middleware_1, middleware_2), view)
 
         result = asyncio.run(combined_func(test_request))
 

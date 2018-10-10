@@ -8,8 +8,8 @@ from yaki.http.types import (
     HttpProtoRoute,
     HttpProtoRouteThreeTuple,
     HttpProtoRouteTwoTuple,
-    HttpRoute,
-    HttpViewFunc
+    HttpRequestResponseView,
+    HttpRoute
 )
 from yaki.http.views import http_404_view, http_405_view
 from yaki.routing.matchers import bracket_route_matcher
@@ -19,7 +19,7 @@ from yaki.utils.types import Scope
 
 def method_view_to_view_func(method: str,
                              parsed_params: Dict[str, str],
-                             method_view: HttpMethodView) -> HttpViewFunc:
+                             method_view: HttpMethodView) -> HttpRequestResponseView:
     if isinstance(method_view, dict):
         view_func = method_view.get(method.upper())
         if view_func is None:
@@ -27,11 +27,13 @@ def method_view_to_view_func(method: str,
     else:  # view func valid for all methods
         view_func = method_view
 
-    if len(parsed_params) == 0:
-        view_func = view_func
+    if len(parsed_params) > 0:
+        ret_view_func: HttpRequestResponseView = partial(view_func, **parsed_params)
     else:
-        view_func = partial(view_func, **parsed_params)
-    return view_func
+        # mypy doesn't understand that the view only takes one arg
+        ret_view_func = view_func  # type: ignore
+
+    return ret_view_func
 
 
 def route_http(config: HttpConfig, scope: Scope):

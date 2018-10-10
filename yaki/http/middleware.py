@@ -4,8 +4,8 @@ from typing import Callable, Tuple
 from yaki.http.types import (
     HttpMiddlewareFunc,
     HttpRequest,
-    HttpResponse,
-    HttpViewFunc
+    HttpRequestResponseView,
+    HttpResponse
 )
 
 
@@ -30,7 +30,8 @@ def exception_500_middleware(
     :param logger: determines where and how the message is logged
     :param error_responder: create the HttpResponse to be sent
     """
-    async def inner(view_func: HttpViewFunc, request: HttpRequest) -> HttpResponse:
+    async def inner(view_func: HttpRequestResponseView,
+                    request: HttpRequest) -> HttpResponse:
         try:
             return await view_func(request)
         except Exception as e:
@@ -48,7 +49,8 @@ exception_500_middleware_default_response = partial(
 
 
 def combine_middleware(middleware: Tuple[HttpMiddlewareFunc, ...],
-                       view_func: HttpViewFunc) -> HttpViewFunc:
+                       view_func: HttpRequestResponseView
+                       ) -> HttpRequestResponseView:
     middleware_and_view_func = view_func
     # Note that the list of the middleware is reversed for it to apply in order
     for middleware_func in middleware[::-1]:

@@ -10,7 +10,6 @@ from unittest import TestCase
 from yaki.apps import yaki_app_http_only
 from yaki.http.config import http_config
 from yaki.http.types import HttpRequest, HttpResponse
-from yaki.routing.matchers import bracket_route_matcher
 from yaki.websockets.routes import Asgi404
 
 
@@ -33,7 +32,7 @@ class YakiAppTests(TestCase):
         app = yaki_app_http_only(
             http_config(
                 routes=[
-                    (bracket_route_matcher(endpoint_path), view),
+                    (endpoint_path, view),
                 ],
                 middleware=[]
             )

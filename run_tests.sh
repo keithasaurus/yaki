@@ -4,6 +4,7 @@ TIME_START=`date +%s`
 
 echo "Running mypy type checks"
 mypy --ignore-missing-imports yaki || exit $?
+mypy --ignore-missing-imports tests || exit $?
 
 echo "Running tests with coverage"
 coverage run -m unittest discover tests || exit $?
