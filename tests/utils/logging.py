@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 import logging
 
 
@@ -9,7 +7,7 @@ class SelfLogger(logging.Logger):
     """
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.logged_messages = defaultdict(lambda: [])
+        self.logged_messages = {}
 
     def info(self, msg, *args, **kwargs):
         self._log(logging.INFO, msg)
@@ -27,4 +25,7 @@ class SelfLogger(logging.Logger):
         self._log(logging.CRITICAL, msg, args, **kwargs)
 
     def _log(self, level, msg, *args, **kwargs):
-        self.logged_messages[level].append(msg)
+        if level not in self.logged_messages:
+            self.logged_messages[level] = [msg]
+        else:
+            self.logged_messages[level].append(msg)
