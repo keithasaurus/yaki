@@ -1,5 +1,5 @@
 from typing import Awaitable, Callable, List, NamedTuple, Optional, Tuple, Union
-from yaki.routes import RouteMatcher
+from yaki.routing.matchers import RouteMatcher
 from yaki.utils.types import AsgiEvent, HostPort
 
 
@@ -54,3 +54,4 @@ WSViewFunc = Callable[[WSScope, TypedReceiver, TypedSender], Awaitable[None]]
 
 class WSConfig(NamedTuple):
     routes: List[Tuple[RouteMatcher, WSViewFunc]]
+

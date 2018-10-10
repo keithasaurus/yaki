@@ -8,9 +8,10 @@ from typing import (
     NamedTuple,
     Optional,
     Tuple,
-    Union
-)
-from yaki.routes import RouteMatcher
+    Union,
+    Set)
+from yaki.routing.matchers import RouteMatcher
+from yaki.routing.types import MatcherOrStr
 from yaki.utils.types import HostPort, Scope
 
 
@@ -41,11 +42,25 @@ class HttpDisconnect(NamedTuple):
 
 HttpViewFunc = Union[Callable[[HttpRequest], Awaitable[HttpResponse]]]
 
-HttpRoutePair = Tuple[RouteMatcher, HttpViewFunc]
+
+# if the route is just a view it accepts all methods.
+# If it's a dict, it's the specified method(s)
+HttpMethodView = Union[HttpViewFunc, Dict[str, HttpViewFunc]]
+
+HttpRoute = Tuple[RouteMatcher, HttpMethodView]
+
+HttpProtoRouteThreeTuple = Tuple[MatcherOrStr, Set[str], HttpViewFunc]
+HttpProtoRouteTwoTuple = Tuple[MatcherOrStr, HttpMethodView]
+
+HttpProtoRoute = Union[
+    HttpProtoRouteTwoTuple,
+    HttpProtoRouteThreeTuple
+]
+
 
 HttpMiddlewareFunc = Callable[[HttpViewFunc, HttpRequest], Awaitable[HttpResponse]]
 
 
 class HttpConfig(NamedTuple):
-    routes: Tuple[HttpRoutePair, ...]
+    routes: Tuple[HttpRoute, ...]
     middleware: Tuple[HttpMiddlewareFunc, ...]

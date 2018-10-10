@@ -10,7 +10,7 @@ from yaki.http.endpoints import asgi_to_http_request
 from yaki.http.routes import route_http
 from yaki.http.types import HttpConfig, HttpRequest, HttpResponse, HttpViewFunc
 from yaki.http.views import DEFAULT_404_RESPONSE
-from yaki.routes import bracket_route_matcher
+from yaki.routing.matchers import bracket_route_matcher
 
 
 class RouteHttpTests(TestCase):

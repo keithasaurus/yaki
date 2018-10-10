@@ -2,8 +2,7 @@ from typing import Callable, Dict, Optional, Pattern
 
 import re
 
-RouteMatcher = Callable[[str], Optional[Dict[str, str]]]
-
+from yaki.routing.types import RouteMatcher
 
 BRACKET_REGEX_STR = '{[^ {]*}'
 

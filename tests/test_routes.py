@@ -1,5 +1,5 @@
 from unittest import TestCase
-from yaki.routes import bracket_route_matcher, regex_match_to_str_dict
+from yaki.routing.matchers import bracket_route_matcher, regex_match_to_str_dict
 
 import re
 
