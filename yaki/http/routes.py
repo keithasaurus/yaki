@@ -22,16 +22,16 @@ def method_view_to_view_func(method: str,
                              method_view: HttpMethodView) -> HttpViewFunc:
     if isinstance(method_view, dict):
         view_func = method_view.get(method.upper())
-
-        return http_405_view if view_func is None else view_func
+        if view_func is None:
+            return http_405_view
     else:  # view func valid for all methods
         view_func = method_view
 
-        if len(parsed_params) == 0:
-            view_func = view_func
-        else:
-            view_func = partial(view_func, **parsed_params)
-        return view_func
+    if len(parsed_params) == 0:
+        view_func = view_func
+    else:
+        view_func = partial(view_func, **parsed_params)
+    return view_func
 
 
 def route_http(config: HttpConfig, scope: Scope):

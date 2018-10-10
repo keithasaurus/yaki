@@ -9,7 +9,7 @@ echo "Running tests with coverage"
 coverage run -m unittest discover tests || exit $?
 
 # this number needs to move up big time. only this low temporarily
-COVERAGE_THRESHOLD=90
+COVERAGE_THRESHOLD=95
 coverage report --fail-under "$COVERAGE_THRESHOLD" > /dev/null 2>&1
 
 COVERAGE_EXIT=$?

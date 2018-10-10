@@ -8,7 +8,8 @@ from tests.test_http.utils import call_http_endpoint, http_response_to_expected_
 from tests.test_websockets.strategies import asgi_ws_scope
 from unittest import TestCase
 from yaki.apps import yaki_app_http_only
-from yaki.http.types import HttpConfig, HttpRequest, HttpResponse
+from yaki.http.config import http_config
+from yaki.http.types import HttpRequest, HttpResponse
 from yaki.routing.matchers import bracket_route_matcher
 from yaki.websockets.routes import Asgi404
 
@@ -30,11 +31,11 @@ class YakiAppTests(TestCase):
             return test_response
 
         app = yaki_app_http_only(
-            HttpConfig(
-                routes=(
+            http_config(
+                routes=[
                     (bracket_route_matcher(endpoint_path), view),
-                ),
-                middleware=tuple()
+                ],
+                middleware=[]
             )
         )
 
