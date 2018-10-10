@@ -1,7 +1,6 @@
 from typing import Iterable
-
 from yaki.http.routes import normalize_routes
-from yaki.http.types import HttpConfig, HttpProtoRoute, HttpMiddlewareFunc
+from yaki.http.types import HttpConfig, HttpMiddlewareFunc, HttpProtoRoute
 
 
 def http_config(routes: Iterable[HttpProtoRoute],

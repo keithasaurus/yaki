@@ -15,4 +15,3 @@ async def http_404_view(request: HttpRequest) -> HttpResponse:
 
 async def http_405_view(request: HttpRequest) -> HttpResponse:
     return DEFAULT_405_RESPONSE
-

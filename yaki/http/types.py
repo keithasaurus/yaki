@@ -7,9 +7,10 @@ from typing import (
     List,
     NamedTuple,
     Optional,
+    Set,
     Tuple,
-    Union,
-    Set)
+    Union
+)
 from yaki.routing.matchers import RouteMatcher
 from yaki.routing.types import MatcherOrStr
 from yaki.utils.types import HostPort, Scope

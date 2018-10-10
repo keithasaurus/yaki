@@ -54,4 +54,3 @@ WSViewFunc = Callable[[WSScope, TypedReceiver, TypedSender], Awaitable[None]]
 
 class WSConfig(NamedTuple):
     routes: List[Tuple[RouteMatcher, WSViewFunc]]
-

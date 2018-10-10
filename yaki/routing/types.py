@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Callable, Union
+from typing import Callable, Dict, Optional, Union
 
 RouteMatcher = Callable[[str], Optional[Dict[str, str]]]
 

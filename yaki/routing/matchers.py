@@ -1,8 +1,7 @@
-from typing import Callable, Dict, Optional, Pattern
+from typing import Dict, Optional, Pattern
+from yaki.routing.types import RouteMatcher
 
 import re
-
-from yaki.routing.types import RouteMatcher
 
 BRACKET_REGEX_STR = '{[^ {]*}'
 

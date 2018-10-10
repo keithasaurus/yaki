@@ -1,10 +1,16 @@
 from functools import partial
-from typing import Iterable, Tuple, Dict, Callable
-
+from typing import Dict, Iterable, Tuple
 from yaki.http.endpoints import http_endpoint
 from yaki.http.middleware import combine_middleware
-from yaki.http.types import HttpConfig, HttpProtoRoute, HttpRoute, \
-    HttpProtoRouteThreeTuple, HttpProtoRouteTwoTuple, HttpViewFunc, HttpMethodView
+from yaki.http.types import (
+    HttpConfig,
+    HttpMethodView,
+    HttpProtoRoute,
+    HttpProtoRouteThreeTuple,
+    HttpProtoRouteTwoTuple,
+    HttpRoute,
+    HttpViewFunc
+)
 from yaki.http.views import http_404_view, http_405_view
 from yaki.routing.matchers import bracket_route_matcher
 from yaki.routing.types import MatcherOrStr, RouteMatcher
