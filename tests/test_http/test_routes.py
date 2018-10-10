@@ -5,9 +5,12 @@ from tests.test_http.strategies import (
     http_response_named_tuple
 )
 from unittest import TestCase
+
+from tests.test_http.utils import http_response_to_expected_parts
 from yaki.http.endpoints import asgi_to_http_request
 from yaki.http.routes import route_http
 from yaki.http.types import HttpConfig, HttpRequest, HttpResponse, HttpViewFunc
+from yaki.http.views import DEFAULT_404_RESPONSE
 from yaki.routes import bracket_route_matcher
 from yaki.utils.types import AsgiEvent
 
@@ -70,3 +73,26 @@ class RouteHttpTests(TestCase):
         self.assertEqual(
             result_target,
             ['middleware was run', test_response])
+
+    @given(asgi_http_scope(),
+           asgi_http_request())
+    @settings(max_examples=30)
+    def test_404_received_if_route_not_found(self,
+                                             test_scope,
+                                             test_request):
+        responses = []
+
+        async def sender(event: AsgiEvent) -> None:
+            responses.append(event)
+
+        async def receiver() -> AsgiEvent:
+            return test_request
+
+        endpoint = route_http(HttpConfig(routes=tuple(), middleware=tuple()),
+                              test_scope)
+
+        asyncio.run(endpoint(receiver, sender))
+
+        self.assertEqual(responses,
+                         http_response_to_expected_parts(DEFAULT_404_RESPONSE))
+

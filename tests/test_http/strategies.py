@@ -52,7 +52,7 @@ def asgi_http_scope(draw):
 def asgi_http_request(draw):
     # todo: allow multiple results to return and set "more_body" appropriately
     return {"type": "http.request",
-            "body": bytes(draw(st.text(max_size=10000)), encoding="utf8"),
+            "body": bytes(draw(st.text(max_size=1000)), encoding="utf8"),
             "more_body": False}
 
 
