@@ -1,3 +1,5 @@
+from functools import partial
+
 from hypothesis import strategies as st
 from tests.utils.strategies import (
     coinflip,
@@ -31,40 +33,29 @@ def gen_http_method():
 
 @st.composite
 def asgi_http_scope(draw):
-    scope = {
+    # some of these keys are optional but can't reason about
+    # how hypothesis is handling at the moment
+    return {
         "type": "http",
         "headers": draw(headers()),
         "http_version": gen_http_version(),
         "method": gen_http_method(),
         "path": "/" + draw(st.text(max_size=1000)),
         "query_string": draw(query_string()),
+        'extensions': draw(scope_extensions()),
+        'server': draw(host_and_port()),
+        'client': draw(host_and_port()),
+        'scheme': draw(st.text(min_size=1)),
+        'root_path': draw(st.text(max_size=100))
     }
-
-    scope.update({
-        name: draw(gen_func) for name, gen_func in
-        [('client', host_and_port()),
-         ('server', host_and_port()),
-         ('scheme', st.text(min_size=1)),
-         ('root_path', st.text(max_size=100)),
-         ('extensions', scope_extensions())
-         ] if coinflip()
-    })
-
-    return scope
 
 
 @st.composite
 def asgi_http_request(draw):
-    ret = {"type": "http.request",
-           "body": bytes(draw(st.text(max_size=10000)), encoding="utf8"),
-           "more_body": False}
-
-    # todo: return multiple requests with only the
-    # last with more_body=False
-    if coinflip():
-        ret["more_body"] = False
-
-    return ret
+    # todo: allow multiple results to return and set "more_body" appropriately
+    return {"type": "http.request",
+            "body": bytes(draw(st.text(max_size=10000)), encoding="utf8"),
+            "more_body": False}
 
 
 @st.composite
