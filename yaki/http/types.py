@@ -34,14 +34,14 @@ class HttpRequest(NamedTuple):
 class HttpResponse(NamedTuple):
     status_code: int
     headers: List[Tuple[bytes, bytes]]
-    body: Union[bytes, Iterable[bytes]]
+    body: Iterable[bytes]
 
 
 class HttpDisconnect(NamedTuple):
     pass
 
 
-HttpViewFunc = Union[Callable[[HttpRequest], Awaitable[HttpResponse]]]
+HttpViewFunc = Callable[[HttpRequest], Awaitable[HttpResponse]]
 
 
 # if the route is just a view it accepts all methods.

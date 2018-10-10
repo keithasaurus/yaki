@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 import logging
 
 
@@ -7,7 +9,7 @@ class SelfLogger(logging.Logger):
     """
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.logged_messages = {}
+        self.logged_messages: Dict[int, List[str]] = {}
 
     def info(self, msg, *args, **kwargs):
         self._log(logging.INFO, msg)

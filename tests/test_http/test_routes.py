@@ -160,7 +160,7 @@ class MethodViewToViewFuncTests(TestCase):
                 GET,
                 {"name": test_name, "age": test_age},
                 # todo: remove when kwargs are part of type signature
-                view  # type: ignore
+                view
             )
 
             self.assertEqual(asyncio.run(new_func(test_request)), test_response)
