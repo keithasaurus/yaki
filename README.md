@@ -1,8 +1,18 @@
-# About
-This is a micro-framework. It's very simple. You get a request object and return a response object. Anything
-you do along the way is up to you.
+# Yaki
 
-## TODO
-- Solidify request/response datatypes
-- Make sure we can talk to WSGI and test
-- TBD/Nothing.
+Yaki, (pronouced like "hockey") is a micro-webframework.
+
+## Another Micro Framework?
+Yes, but this one is focused on asyncio.
+
+## Aren't there others?
+Yes, but this one is intended to be the easiest to understand, extend, 
+and faster to develop useful things.
+
+## Give me an example
+- TODO: http example
+
+- TODO: websocket example
+
+- TODO: http and websocket example
+
