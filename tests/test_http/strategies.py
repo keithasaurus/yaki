@@ -76,17 +76,16 @@ def http_response_named_tuple(draw):
 @st.composite
 def http_request_named_tuple(draw):
     return HttpRequest(
-        body=draw(st.binary(max_size=1000)),
+        body=draw(st.binary(max_size=100)),
         client=draw(st.one_of(st.from_type(HostPort), st.none())),
         extensions=draw(st.one_of(scope_extensions(), st.none())),
         headers=draw(st.lists(st.tuples(header_string(), header_string()),
-                              max_size=60)),
+                              max_size=15)),
         http_version=draw(gen_http_version()),
         method=draw(gen_http_method()),
-        path=draw(st.text(max_size=1000)),
+        path=draw(st.text(max_size=400)),
         query_string=draw(query_string()),
-        root_path=draw(st.text(max_size=1000)),
+        root_path=draw(st.text(max_size=400)),
         scheme=draw(st.text(min_size=1, max_size=5)),
         scope_orig=draw(asgi_http_scope()),
-        server=draw(st.one_of(st.from_type(HostPort), st.none()))
-    )
+        server=draw(st.one_of(st.from_type(HostPort), st.none())))

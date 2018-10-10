@@ -61,7 +61,7 @@ class CombineMiddlewareTests(TestCase):
 
 class Exception500Tests(TestCase):
     @given(http_request_named_tuple(),
-           st.text(max_size=200))
+           st.text(max_size=100))
     @settings(max_examples=20)
     def test_default_responder_returns_proper_result_when_exception_raised(
             self,
