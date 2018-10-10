@@ -6,7 +6,6 @@ from tests.test_http.strategies import (
 )
 from tests.test_http.utils import http_response_to_expected_parts
 from unittest import TestCase
-
 from yaki.http.endpoints import asgi_to_http_request, http_endpoint, respond
 from yaki.http.types import HttpRequest, HttpResponse
 from yaki.utils.types import AsgiEvent

@@ -1,17 +1,19 @@
-import logging
-
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from tests.test_http.strategies import (
     http_request_named_tuple,
     http_response_named_tuple
 )
-from unittest import TestCase
-
 from tests.utils.logging import SelfLogger
-from yaki.http.middleware import combine_middleware, exception_500_middleware_default_response
+from unittest import TestCase
+from yaki.http.middleware import (
+    combine_middleware,
+    exception_500_middleware_default_response
+)
 from yaki.http.types import HttpRequest, HttpResponse, HttpViewFunc
 
 import asyncio
+import logging
 
 
 class CombineMiddlewareTests(TestCase):

@@ -1,5 +1,6 @@
-import logging
 from collections import defaultdict
+
+import logging
 
 
 class SelfLogger(logging.Logger):
@@ -27,4 +28,3 @@ class SelfLogger(logging.Logger):
 
     def _log(self, level, msg, *args, **kwargs):
         self.logged_messages[level].append(msg)
-

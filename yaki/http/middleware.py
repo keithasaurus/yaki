@@ -1,8 +1,12 @@
 from functools import partial
 from logging import Logger
-from typing import Tuple, Callable
-from yaki.http.types import HttpMiddlewareFunc, HttpViewFunc, HttpRequest, \
-    HttpResponse
+from typing import Callable, Tuple
+from yaki.http.types import (
+    HttpMiddlewareFunc,
+    HttpRequest,
+    HttpResponse,
+    HttpViewFunc
+)
 
 
 def default_error_responder(exception: Exception) -> HttpResponse:
