@@ -1,6 +1,5 @@
 from hypothesis import strategies as st
 from tests.utils.strategies import (
-    coinflip,
     headers,
     host_and_port,
     query_string,
@@ -8,32 +7,22 @@ from tests.utils.strategies import (
 )
 from yaki.utils.types import Scope
 
-import random
-
 
 @st.composite
 def ws_scope(draw) -> Scope:
-    scope = {
+    return {
         'type': 'websocket',
-        'path': draw(st.text()),
+        'path': draw(st.text(max_size=100)),
         'headers': draw(headers()),
+        # todo: next keys are optional
+        'query_string': draw(query_string()),
+        'root_path': draw(st.text(max_size=100)),
+        'client': draw(host_and_port()),
+        'server': draw(host_and_port()),
+        'subprotocols': draw(st.lists(st.text(min_size=1))),
+        'extensions': draw(scope_extensions()),
+        'scheme': draw(st.sampled_from(['ws', 'wss']))
     }
-
-    if coinflip():
-        scope['scheme'] = random.choice(["ws", "wss"])
-
-    for name, drawable in [
-        ('query_string', query_string()),
-        ('root_path', st.text()),
-        ('client', host_and_port()),
-        ('server', host_and_port()),
-        ('subprotocols', st.lists(st.text(min_size=1))),
-        ('extensions', scope_extensions())
-    ]:
-        if coinflip():
-            scope[name] = draw(drawable)
-
-    return scope
 
 
 @st.composite
@@ -43,41 +32,27 @@ def ws_connect(draw):
 
 @st.composite
 def ws_receive(draw):
-    event = {
+    return {
         "type": "websocket.receive",
+        # todo: bytes and text should alternate in which is None and which isn't
+        "bytes": draw(st.text().map(lambda x: bytes(x, encoding="utf8"))),
+        "text": None
     }
-
-    if coinflip():
-        event["bytes"] = draw(st.text().map(lambda x: bytes(x, encoding="utf8")))
-        if coinflip():
-            event["text"] = None
-    else:
-        event["text"] = draw(st.text())
-        if coinflip():
-            event["bytes"] = None
-
-    return event
 
 
 @st.composite
 def ws_close(draw):
-    ret = {
-        "type": "websocket.close"
+    return {
+        "type": "websocket.close",
+        # todo: optional kwarg
+        'code': draw(st.integers())
     }
-
-    if coinflip():
-        ret["code"] = random.randint(1, 20000)
-
-    return ret
 
 
 @st.composite
 def ws_disconnect(draw):
-    ret = {
-        "type": "websocket.close"
+    return {
+        "type": "websocket.close",
+        # todo: optional kwarg
+        'code': draw(st.integers())
     }
-
-    if coinflip():
-        ret["code"] = random.randint(1, 20000)
-
-    return ret

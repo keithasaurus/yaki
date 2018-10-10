@@ -91,11 +91,3 @@ def http_request_named_tuple(draw):
         server=draw(st.one_of(st.from_type(HostPort), st.none()))
     )
 
-
-if __name__ == '__main__':
-    from hypothesis import given
-    @given(http_request_named_tuple())
-    def something(request):
-        breakpoint()
-
-    something()

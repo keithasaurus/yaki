@@ -1,5 +1,3 @@
-from typing import List
-
 from hypothesis import given, settings
 from tests.test_http.strategies import (
     asgi_http_request,
@@ -7,6 +5,7 @@ from tests.test_http.strategies import (
     http_response_named_tuple
 )
 from tests.test_http.utils import http_response_to_expected_parts
+from typing import List
 from unittest import TestCase
 from yaki.http.endpoints import asgi_to_http_request
 from yaki.http.routes import route_http

@@ -3,10 +3,6 @@ from hypothesis import strategies as st
 import random
 
 
-def coinflip() -> bool:
-    return random.random() > .5
-
-
 @st.composite
 def query_string(draw):
     strs = []
