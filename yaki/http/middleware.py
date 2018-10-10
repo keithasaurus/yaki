@@ -1,6 +1,46 @@
 from functools import partial
-from typing import Tuple
-from yaki.http.types import HttpMiddlewareFunc, HttpViewFunc
+from logging import Logger
+from typing import Tuple, Callable
+from yaki.http.types import HttpMiddlewareFunc, HttpViewFunc, HttpRequest, \
+    HttpResponse
+
+
+def default_error_responder(exception: Exception) -> HttpResponse:
+    """
+    By default we are not communicating any information about the exception to the
+    client
+    """
+    return HttpResponse(
+        status_code=500,
+        headers=[],
+        body=b"Server Error")
+
+
+def exception_500_middleware(
+        logger: Logger,
+        error_responder: Callable[[Exception], HttpResponse]
+) -> HttpMiddlewareFunc:
+    """
+    Catches any exception that has bubbled up and logs it using whatever logger
+    the user prefers
+    :param logger: determines where and how the message is logged
+    :param error_responder: create the HttpResponse to be sent
+    """
+    async def inner(view_func: HttpViewFunc, request: HttpRequest) -> HttpResponse:
+        try:
+            return await view_func(request)
+        except Exception as e:
+            logger.error(str(e))
+
+            return error_responder(e)
+
+    return inner
+
+
+exception_500_middleware_default_response = partial(
+    exception_500_middleware,
+    error_responder=default_error_responder
+)
 
 
 def combine_middleware(middleware: Tuple[HttpMiddlewareFunc, ...],

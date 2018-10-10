@@ -1,10 +1,14 @@
-from hypothesis import given, settings
+import logging
+
+from hypothesis import given, settings, strategies as st
 from tests.test_http.strategies import (
     http_request_named_tuple,
     http_response_named_tuple
 )
 from unittest import TestCase
-from yaki.http.middleware import combine_middleware
+
+from tests.utils.logging import SelfLogger
+from yaki.http.middleware import combine_middleware, exception_500_middleware_default_response
 from yaki.http.types import HttpRequest, HttpResponse, HttpViewFunc
 
 import asyncio
@@ -51,3 +55,27 @@ class CombineMiddlewareTests(TestCase):
 
         self.assertEqual(events,
                          [1, 'b', 'the view happened', 'c', 4])
+
+
+class Exception500Tests(TestCase):
+    @given(http_request_named_tuple(),
+           st.text(max_size=200))
+    def test_default_responder_returns_proper_result_when_exception_raised(
+            self,
+            test_request,
+            exception_message):
+        test_exception = Exception(exception_message)
+
+        async def view(request: HttpRequest) -> HttpResponse:
+            raise test_exception
+
+        logger = SelfLogger(__file__)
+
+        combined_func = combine_middleware(
+            (exception_500_middleware_default_response(logger),),
+            view)
+
+        asyncio.run(combined_func(test_request))
+
+        self.assertEqual(logger.logged_messages,
+                         {logging.ERROR: [str(test_exception)]})

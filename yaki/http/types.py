@@ -32,7 +32,7 @@ class HttpRequest(NamedTuple):
 class HttpResponse(NamedTuple):
     status_code: int
     headers: List[Tuple[bytes, bytes]]
-    body: Iterable[bytes]
+    body: Union[bytes, Iterable[bytes]]
 
 
 class HttpDisconnect(NamedTuple):
