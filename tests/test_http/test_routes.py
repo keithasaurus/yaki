@@ -4,9 +4,8 @@ from tests.test_http.strategies import (
     asgi_http_scope,
     http_response_named_tuple
 )
-from unittest import TestCase
-
 from tests.test_http.utils import http_response_to_expected_parts
+from unittest import TestCase
 from yaki.http.endpoints import asgi_to_http_request
 from yaki.http.routes import route_http
 from yaki.http.types import HttpConfig, HttpRequest, HttpResponse, HttpViewFunc
@@ -95,4 +94,3 @@ class RouteHttpTests(TestCase):
 
         self.assertEqual(responses,
                          http_response_to_expected_parts(DEFAULT_404_RESPONSE))
-
