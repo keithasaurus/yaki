@@ -19,7 +19,7 @@ import logging
 class CombineMiddlewareTests(TestCase):
     @given(http_request_named_tuple(),
            http_response_named_tuple())
-    @settings(max_examples=30)
+    @settings(max_examples=20)
     def test_executes_in_filo_order(self, test_request, test_response):
         events = []
 
@@ -62,6 +62,7 @@ class CombineMiddlewareTests(TestCase):
 class Exception500Tests(TestCase):
     @given(http_request_named_tuple(),
            st.text(max_size=200))
+    @settings(max_examples=20)
     def test_default_responder_returns_proper_result_when_exception_raised(
             self,
             test_request,

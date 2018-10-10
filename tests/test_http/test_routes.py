@@ -17,7 +17,7 @@ class RouteHttpTests(TestCase):
     @given(asgi_http_scope(),
            asgi_http_request(),
            http_response_named_tuple())
-    @settings(max_examples=30)
+    @settings(max_examples=20)
     def test_response_is_correct(self,
                                  test_scope,
                                  test_asgi_request,
@@ -62,7 +62,7 @@ class RouteHttpTests(TestCase):
 
     @given(asgi_http_scope(),
            asgi_http_request())
-    @settings(max_examples=30)
+    @settings(max_examples=20)
     def test_404_received_if_route_not_found(self,
                                              test_scope,
                                              test_request):
