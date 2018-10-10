@@ -1,6 +1,10 @@
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from tests.test_websockets.strategies import ws_connect, ws_receive, ws_scope
+from tests.test_websockets.strategies import (
+    asgi_ws_connect,
+    asgi_ws_receive,
+    asgi_ws_scope
+)
 from unittest import TestCase
 from yaki.utils.types import AsgiEvent, Scope
 from yaki.websockets.endpoints import (
@@ -15,9 +19,9 @@ import asyncio
 
 
 class WSEndpointTests(TestCase):
-    @given(ws_scope(),
-           ws_connect(),
-           st.lists(ws_receive()),
+    @given(asgi_ws_scope(),
+           asgi_ws_connect(),
+           st.lists(asgi_ws_receive()),
            st.from_type(WSAccept),
            st.lists(st.from_type(WSSend)),
            st.from_type(WSClose),

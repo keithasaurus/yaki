@@ -90,4 +90,3 @@ def http_request_named_tuple(draw):
         scope_orig=draw(asgi_http_scope()),
         server=draw(st.one_of(st.from_type(HostPort), st.none()))
     )
-

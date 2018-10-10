@@ -4,39 +4,13 @@ from tests.test_http.strategies import (
     asgi_http_scope,
     http_response_named_tuple
 )
-from tests.test_http.utils import http_response_to_expected_parts
-from typing import List
+from tests.test_http.utils import call_http_endpoint, http_response_to_expected_parts
 from unittest import TestCase
 from yaki.http.endpoints import asgi_to_http_request
 from yaki.http.routes import route_http
 from yaki.http.types import HttpConfig, HttpRequest, HttpResponse, HttpViewFunc
 from yaki.http.views import DEFAULT_404_RESPONSE
 from yaki.routes import bracket_route_matcher
-from yaki.utils.types import AsgiEvent, Scope
-
-import asyncio
-
-
-def call_http_route_test(config: HttpConfig,
-                         scope: Scope,
-                         events: List[AsgiEvent]) -> List[AsgiEvent]:
-
-    responses = []
-
-    async def sender(event: AsgiEvent) -> None:
-        responses.append(event)
-
-    events_iter = iter(events)
-
-    async def receiver() -> AsgiEvent:
-        for _ in events:
-            return next(events_iter)
-
-    endpoint = route_http(config, scope)
-
-    asyncio.run(endpoint(receiver, sender))
-
-    return responses
 
 
 class RouteHttpTests(TestCase):
@@ -71,7 +45,7 @@ class RouteHttpTests(TestCase):
             self.assertEqual(request, request_named_tuple)
             return test_response
 
-        call_http_route_test(
+        endpoint = route_http(
             HttpConfig(
                 routes=(
                     (bracket_route_matcher(endpoint_path), view),
@@ -79,8 +53,10 @@ class RouteHttpTests(TestCase):
                 middleware=(
                     middleware_func,
                 )),
-            test_scope,
-            [test_asgi_request])
+            test_scope
+        )
+
+        call_http_endpoint(endpoint, [test_asgi_request])
 
         self.assertEqual(result_target, ['middleware was run', test_response])
 
@@ -90,18 +66,10 @@ class RouteHttpTests(TestCase):
     def test_404_received_if_route_not_found(self,
                                              test_scope,
                                              test_request):
-        responses = []
-
-        async def sender(event: AsgiEvent) -> None:
-            responses.append(event)
-
-        async def receiver() -> AsgiEvent:
-            return test_request
-
         endpoint = route_http(HttpConfig(routes=tuple(), middleware=tuple()),
                               test_scope)
 
-        asyncio.run(endpoint(receiver, sender))
+        responses = call_http_endpoint(endpoint, [test_request])
 
         self.assertEqual(responses,
                          http_response_to_expected_parts(DEFAULT_404_RESPONSE))
