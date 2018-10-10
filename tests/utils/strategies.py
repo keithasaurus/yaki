@@ -12,7 +12,7 @@ def query_string(draw):
     strs = []
     for _ in range(random.randint(0, 10)):
         key = draw(st.text(min_size=1,
-                           max_size=30)
+                           max_size=20)
                    .map(lambda x: x.strip())
                    .filter(lambda x: len(x) > 0))
         val = draw(st.text(max_size=40))
@@ -25,7 +25,7 @@ def query_string(draw):
 @st.composite
 def header_string(draw):
     return draw(
-        st.text(max_size=1000).map(lambda x: bytes(x.lower(), encoding="utf8"))
+        st.text(max_size=100).map(lambda x: bytes(x.lower(), encoding="utf8"))
     )
 
 
@@ -37,7 +37,7 @@ def headers(draw):
             min_size=2,
             max_size=2),
         min_size=0,
-        max_size=40))
+        max_size=15))
 
 
 @st.composite
@@ -50,5 +50,5 @@ def scope_extensions(draw):
     return draw(st.dictionaries(st.text(),
                                 st.dictionaries(st.text(),
                                                 st.text(),
-                                                max_size=20),
-                                max_size=20))
+                                                max_size=5),
+                                max_size=5))

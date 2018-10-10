@@ -1,3 +1,5 @@
+from typing import List
+
 from hypothesis import given, settings
 from tests.test_http.strategies import (
     asgi_http_request,
@@ -11,9 +13,31 @@ from yaki.http.routes import route_http
 from yaki.http.types import HttpConfig, HttpRequest, HttpResponse, HttpViewFunc
 from yaki.http.views import DEFAULT_404_RESPONSE
 from yaki.routes import bracket_route_matcher
-from yaki.utils.types import AsgiEvent
+from yaki.utils.types import AsgiEvent, Scope
 
 import asyncio
+
+
+def call_http_route_test(config: HttpConfig,
+                         scope: Scope,
+                         events: List[AsgiEvent]) -> List[AsgiEvent]:
+
+    responses = []
+
+    async def sender(event: AsgiEvent) -> None:
+        responses.append(event)
+
+    events_iter = iter(events)
+
+    async def receiver() -> AsgiEvent:
+        for _ in events:
+            return next(events_iter)
+
+    endpoint = route_http(config, scope)
+
+    asyncio.run(endpoint(receiver, sender))
+
+    return responses
 
 
 class RouteHttpTests(TestCase):
@@ -48,15 +72,7 @@ class RouteHttpTests(TestCase):
             self.assertEqual(request, request_named_tuple)
             return test_response
 
-        async def sender(response: HttpResponse) -> None:
-            # not important
-            pass
-
-        async def receiver() -> AsgiEvent:
-            await asyncio.sleep(0)
-            return test_asgi_request
-
-        endpoint = route_http(
+        call_http_route_test(
             HttpConfig(
                 routes=(
                     (bracket_route_matcher(endpoint_path), view),
@@ -64,14 +80,10 @@ class RouteHttpTests(TestCase):
                 middleware=(
                     middleware_func,
                 )),
-            test_scope
-        )
+            test_scope,
+            [test_asgi_request])
 
-        asyncio.run(endpoint(receiver, sender))
-
-        self.assertEqual(
-            result_target,
-            ['middleware was run', test_response])
+        self.assertEqual(result_target, ['middleware was run', test_response])
 
     @given(asgi_http_scope(),
            asgi_http_request())

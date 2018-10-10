@@ -1,6 +1,5 @@
 from hypothesis import strategies as st
 from tests.utils.strategies import (
-    coinflip,
     header_string,
     headers,
     host_and_port,
@@ -10,23 +9,23 @@ from tests.utils.strategies import (
 from yaki.http.types import HttpRequest, HttpResponse
 from yaki.utils.types import HostPort
 
-import random
+
+@st.composite
+def gen_http_version(draw):
+    return draw(st.sampled_from(["1.0", "1.1", "1.2"]))
 
 
-def gen_http_version():
-    return random.choice(["1.0", "1.1", "1.2"])
-
-
-def gen_http_method():
-    return random.choice(["CONNECT",
-                          "DELETE",
-                          "GET",
-                          "HEAD",
-                          "OPTIONS",
-                          "PATCH",
-                          "POST",
-                          "PUT",
-                          "TRACE"])
+@st.composite
+def gen_http_method(draw):
+    return draw(st.sampled_from(["CONNECT",
+                                 "DELETE",
+                                 "GET",
+                                 "HEAD",
+                                 "OPTIONS",
+                                 "PATCH",
+                                 "POST",
+                                 "PUT",
+                                 "TRACE"]))
 
 
 @st.composite
@@ -36,8 +35,8 @@ def asgi_http_scope(draw):
     return {
         "type": "http",
         "headers": draw(headers()),
-        "http_version": gen_http_version(),
-        "method": gen_http_method(),
+        "http_version": draw(gen_http_version()),
+        "method": draw(gen_http_method()),
         "path": "/" + draw(st.text(max_size=1000)),
         "query_string": draw(query_string()),
         'extensions': draw(scope_extensions()),
@@ -77,17 +76,26 @@ def http_response_named_tuple(draw):
 @st.composite
 def http_request_named_tuple(draw):
     return HttpRequest(
-        body=draw(st.binary()),
-        client=draw(st.from_type(HostPort)) if coinflip() else None,
-        extensions=draw(scope_extensions()) if coinflip() else None,
+        body=draw(st.binary(max_size=1000)),
+        client=draw(st.one_of(st.from_type(HostPort), st.none())),
+        extensions=draw(st.one_of(scope_extensions(), st.none())),
         headers=draw(st.lists(st.tuples(header_string(), header_string()),
                               max_size=60)),
-        http_version=gen_http_version(),
-        method=gen_http_method(),
+        http_version=draw(gen_http_version()),
+        method=draw(gen_http_method()),
         path=draw(st.text(max_size=1000)),
         query_string=draw(query_string()),
         root_path=draw(st.text(max_size=1000)),
         scheme=draw(st.text(min_size=1, max_size=5)),
         scope_orig=draw(asgi_http_scope()),
-        server=draw(st.from_type(HostPort)) if coinflip() else None
+        server=draw(st.one_of(st.from_type(HostPort), st.none()))
     )
+
+
+if __name__ == '__main__':
+    from hypothesis import given
+    @given(http_request_named_tuple())
+    def something(request):
+        breakpoint()
+
+    something()
