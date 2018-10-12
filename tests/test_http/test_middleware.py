@@ -55,6 +55,30 @@ class CombineMiddlewareTests(TestCase):
         self.assertEqual(events,
                          [1, 'b', 'the view happened', 'c', 4])
 
+    @given(st.text(),
+           http_request_named_tuple(),
+           http_response_named_tuple())
+    def test_middleware_can_edit_custom_obj(self,
+                                            test_val,
+                                            test_request,
+                                            test_response):
+        async def name_middleware(view_func: HttpRequestResponseView,
+                                  request: HttpRequest) -> HttpResponse:
+            request.custom.name = test_val
+
+            return await view_func(request)
+
+        async def view(request: HttpRequest):
+            assert request.custom.name == test_val
+
+            return test_response
+
+        combined_func = combine_middleware((name_middleware,), view)
+
+        result = asyncio.run(combined_func(test_request))
+
+        self.assertEqual(result, test_response)
+
 
 class Exception500Tests(TestCase):
     @given(http_request_named_tuple(),

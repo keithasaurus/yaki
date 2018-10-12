@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from mypy_extensions import Arg
+from types import SimpleNamespace
 from typing import (
     Any,
     Awaitable,
@@ -20,6 +21,7 @@ from yaki.utils.types import Headers, HostPort, Scope
 class HttpRequest(NamedTuple):
     body: bytes
     client: Optional[HostPort]
+    custom: SimpleNamespace
     extensions: Optional[Dict[str, Dict[Any, Any]]]
     headers: List[Tuple[bytes, bytes]]
     http_version: str

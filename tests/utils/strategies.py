@@ -46,5 +46,5 @@ def scope_extensions(draw):
     return draw(st.dictionaries(st.text(),
                                 st.dictionaries(st.text(),
                                                 st.text(),
-                                                max_size=5),
-                                max_size=5))
+                                                max_size=3),
+                                max_size=3))

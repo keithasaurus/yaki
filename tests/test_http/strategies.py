@@ -6,6 +6,7 @@ from tests.utils.strategies import (
     query_string,
     scope_extensions
 )
+from types import SimpleNamespace
 from yaki.http.types import HttpRequest, HttpResponse
 from yaki.utils.types import HostPort
 
@@ -62,8 +63,7 @@ def http_response_named_tuple(draw):
         # make the iterable a list for the sake of testing... some
         # iterables can only be consumed once, meaning testing make not
         # behave the same as the code under test and vice versa
-        body=draw(st.text(max_size=1000)
-                  .map(lambda x: bytes(x.lower(), encoding="utf8"))),
+        body=draw(st.text(max_size=100).map(lambda x: x.encode("utf8"))),
         headers=draw(headers())
     )
 
@@ -71,16 +71,17 @@ def http_response_named_tuple(draw):
 @st.composite
 def http_request_named_tuple(draw):
     return HttpRequest(
-        body=draw(st.binary(max_size=100)),
+        body=draw(st.binary(max_size=50)),
         client=draw(st.one_of(st.from_type(HostPort), st.none())),
+        custom=SimpleNamespace(),
         extensions=draw(st.one_of(scope_extensions(), st.none())),
         headers=draw(st.lists(st.tuples(header_string(), header_string()),
-                              max_size=15)),
+                              max_size=10)),
         http_version=draw(gen_http_version()),
         method=draw(gen_http_method()),
-        path=draw(st.text(max_size=400)),
+        path=draw(st.text(max_size=200)),
         query_string=draw(query_string()),
-        root_path=draw(st.text(max_size=400)),
+        root_path=draw(st.text(max_size=200)),
         scheme=draw(st.text(min_size=1, max_size=5)),
         scope_orig=draw(asgi_http_scope()),
         server=draw(st.one_of(st.from_type(HostPort), st.none())))

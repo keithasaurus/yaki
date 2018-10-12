@@ -1,3 +1,4 @@
+from types import SimpleNamespace
 from typing import Union
 from yaki.http.types import (
     HttpDisconnect,
@@ -60,6 +61,7 @@ def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:
     return HttpRequest(
         body=content,
         client=list_hostport_to_datatype(scope.get("client")),
+        custom=SimpleNamespace(),
         extensions=extensions,
         headers=list_headers_to_tuples(scope['headers']),
         http_version=http_version,
