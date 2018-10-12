@@ -52,5 +52,5 @@ TypedSender = Callable[[WSOutgoingEvent], Awaitable[None]]
 WSViewFunc = Callable[[WSScope, TypedReceiver, TypedSender], Awaitable[None]]
 
 
-class WSConfig(NamedTuple):
-    routes: List[Tuple[RouteMatcher, WSViewFunc]]
+class WSApp(NamedTuple):
+    routes: Tuple[Tuple[RouteMatcher, WSViewFunc], ...]

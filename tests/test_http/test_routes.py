@@ -12,7 +12,7 @@ from unittest import TestCase
 from yaki.http.endpoints import asgi_to_http_request
 from yaki.http.routes import method_view_to_view_func, normalize_routes, route_http
 from yaki.http.types import (
-    HttpConfig,
+    HttpApp,
     HttpRequest,
     HttpRequestResponseView,
     HttpResponse
@@ -57,8 +57,8 @@ class RouteHttpTests(TestCase):
             self.assertEqual(request, request_named_tuple)
             return test_response
 
-        endpoint = route_http(
-            HttpConfig(
+        _, endpoint = route_http(
+            HttpApp(
                 routes=(
                     (bracket_route_matcher(endpoint_path), view),
                 ),
@@ -78,8 +78,8 @@ class RouteHttpTests(TestCase):
     def test_404_received_if_route_not_found(self,
                                              test_scope,
                                              test_request):
-        endpoint = route_http(HttpConfig(routes=tuple(), middleware=tuple()),
-                              test_scope)
+        _, endpoint = route_http(HttpApp(routes=tuple(), middleware=tuple()),
+                                 test_scope)
 
         responses = call_http_endpoint(endpoint, [test_request])
 

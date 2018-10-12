@@ -7,8 +7,8 @@ from tests.test_http.strategies import (
 from tests.test_http.utils import call_http_endpoint, http_response_to_expected_parts
 from tests.test_websockets.strategies import asgi_ws_scope
 from unittest import TestCase
-from yaki.apps import yaki_app_http_only
-from yaki.http.config import http_config
+from yaki.apps import yaki
+from yaki.http.config import http_app
 from yaki.http.types import HttpRequest, HttpResponse
 from yaki.websockets.routes import Asgi404
 
@@ -29,8 +29,8 @@ class YakiAppTests(TestCase):
         async def view(request: HttpRequest) -> HttpResponse:
             return test_response
 
-        app = yaki_app_http_only(
-            http_config(
+        app = yaki(
+            http_app(
                 routes=[
                     (endpoint_path, view),
                 ],

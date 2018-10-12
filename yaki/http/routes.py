@@ -3,7 +3,7 @@ from typing import Dict, Iterable, Tuple
 from yaki.http.endpoints import http_endpoint
 from yaki.http.middleware import combine_middleware
 from yaki.http.types import (
-    HttpConfig,
+    HttpApp,
     HttpMethodView,
     HttpProtoRoute,
     HttpProtoRouteThreeTuple,
@@ -36,7 +36,7 @@ def method_view_to_view_func(method: str,
     return ret_view_func
 
 
-def route_http(config: HttpConfig, scope: Scope):
+def route_http(config: HttpApp, scope: Scope):
     path = scope['path']
     assert isinstance(path, str)
 
@@ -48,15 +48,18 @@ def route_http(config: HttpConfig, scope: Scope):
             view_func = method_view_to_view_func(scope_method,
                                                  route_match_result,
                                                  method_view)
+
+            found = True
             break
 
     else:
         view_func = http_404_view
+        found = False
 
     middleware_and_view_func = combine_middleware(config.middleware,
                                                   view_func)
 
-    return http_endpoint(middleware_and_view_func)(scope)
+    return found, http_endpoint(middleware_and_view_func)(scope)
 
 
 def normalize_route_matcher(matcher: MatcherOrStr) -> RouteMatcher:

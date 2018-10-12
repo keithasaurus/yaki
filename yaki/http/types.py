@@ -81,6 +81,6 @@ HttpMiddlewareFunc = Callable[[HttpRequestResponseView, HttpRequest],
                               Awaitable[HttpResponse]]
 
 
-class HttpConfig(NamedTuple):
+class HttpApp(NamedTuple):
     routes: Tuple[HttpRoute, ...]
     middleware: Tuple[HttpMiddlewareFunc, ...]
