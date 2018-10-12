@@ -1,11 +1,11 @@
 from yaki.http.types import HttpRequest, HttpResponse
 
 DEFAULT_404_RESPONSE = HttpResponse(status_code=404,
-                                    body=[b"404: Path Not Found"],
+                                    body=b"404: Path Not Found",
                                     headers=[])
 
 DEFAULT_405_RESPONSE = HttpResponse(status_code=405,
-                                    body=[b"405: Method Not Allowed"],
+                                    body=b"405: Method Not Allowed",
                                     headers=[])
 
 

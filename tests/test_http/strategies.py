@@ -62,13 +62,8 @@ def http_response_named_tuple(draw):
         # make the iterable a list for the sake of testing... some
         # iterables can only be consumed once, meaning testing make not
         # behave the same as the code under test and vice versa
-        body=draw(
-            st.lists(
-                st.text(max_size=1000).map(lambda x: bytes(x.lower(),
-                                                           encoding="utf8")),
-                max_size=40
-            )
-        ),
+        body=draw(st.text(max_size=1000)
+                  .map(lambda x: bytes(x.lower(), encoding="utf8"))),
         headers=draw(headers())
     )
 

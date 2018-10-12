@@ -1,10 +1,10 @@
+from dataclasses import dataclass
 from mypy_extensions import Arg
 from typing import (
     Any,
     Awaitable,
     Callable,
     Dict,
-    Iterable,
     List,
     NamedTuple,
     Optional,
@@ -14,7 +14,7 @@ from typing import (
 )
 from yaki.routing.matchers import RouteMatcher
 from yaki.routing.types import MatcherOrStr
-from yaki.utils.types import HostPort, Scope
+from yaki.utils.types import Headers, HostPort, Scope
 
 
 class HttpRequest(NamedTuple):
@@ -32,10 +32,20 @@ class HttpRequest(NamedTuple):
     server: Optional[HostPort]
 
 
-class HttpResponse(NamedTuple):
+# friendlier types
+ResponseTypes = Union[str, bytes]
+
+
+@dataclass
+class HttpResponse:
+    """
+    using dataclass instead of named tuple for mutability... if
+    responses are large, it may be problematic to create whole
+    new objects in middleware
+    """
     status_code: int
-    headers: List[Tuple[bytes, bytes]]
-    body: Iterable[bytes]
+    headers: Headers
+    body: bytes
 
 
 class HttpDisconnect(NamedTuple):

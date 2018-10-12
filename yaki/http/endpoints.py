@@ -15,7 +15,8 @@ from yaki.utils.types import (
 )
 
 
-async def respond(response: HttpResponse, send: Sender) -> None:
+async def respond(response: HttpResponse,
+                  send: Sender) -> None:
     await send(
         {
             "type": "http.response.start",
@@ -24,23 +25,9 @@ async def respond(response: HttpResponse, send: Sender) -> None:
         }
     )
 
-    prev_item = None
-    iterations = 0
-
-    for body_item in response.body:
-        # send previous because we need to know if there's a future event to send
-        if iterations > 0:
-            await send({"type": "http.response.body",
-                        "body": prev_item,
-                        "more_body": True})
-
-        prev_item = body_item
-        iterations += 1
-
-    if iterations > 0:
-        await send({"type": "http.response.body",
-                    "body": prev_item,
-                    "more_body": False})
+    await send({"type": "http.response.body",
+                "body": response.body,
+                "more_body": False})
 
 
 def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:

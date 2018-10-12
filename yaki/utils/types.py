@@ -34,7 +34,10 @@ class HostPort(NamedTuple):
     port: int
 
 
-def list_headers_to_tuples(val: AsgiValue) -> List[Tuple[bytes, bytes]]:
+Headers = List[Tuple[bytes, bytes]]
+
+
+def list_headers_to_tuples(val: AsgiValue) -> Headers:
     """
     Currently this is the same for websockets and http, but that could change
     """

@@ -17,7 +17,7 @@ def default_error_responder(exception: Exception) -> HttpResponse:
     return HttpResponse(
         status_code=500,
         headers=[],
-        body=[b"Server Error"])
+        body=b"Server Error")
 
 
 def exception_500_middleware(

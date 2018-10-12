@@ -7,26 +7,18 @@ import asyncio
 
 
 def http_response_to_expected_parts(response: HttpResponse) -> List[AsgiEvent]:
-    expected_body: List[AsgiEvent] = [
+    return [
+        {
+            'type': 'http.response.start',
+            'status': response.status_code,
+            'headers': [list(x) for x in response.headers]
+        },
         {
             'type': 'http.response.body',
-            'body': body_bytes,
-            'more_body': True,
-        } for body_bytes in response.body
+            'body': response.body,
+            'more_body': False,
+        }
     ]
-
-    if len(expected_body) > 0:
-        expected_body[-1]['more_body'] = False
-
-    ret: List[AsgiEvent] = [{
-        'type': 'http.response.start',
-        'status': response.status_code,
-        'headers': [list(x) for x in response.headers]
-    }]
-
-    ret.extend(expected_body)
-
-    return ret
 
 
 def call_http_endpoint(endpoint: AsgiInstance,
