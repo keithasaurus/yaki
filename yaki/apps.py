@@ -51,7 +51,7 @@ def yaki(*apps: AppConfig):
             if found:
                 return endpoint
             else:
-                if i == app_routers[-1]:
+                if i == len(app_routers) - 1:
                     return endpoint
         else:
             raise Exception('Should have returned a response')
