@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Callable, Optional
 from yaki.http.types import HttpResponse, ResponseTypes
 from yaki.utils.types import Headers
 
@@ -13,7 +13,7 @@ def response_types_to_bytes(content: ResponseTypes) -> bytes:
         raise TypeError(f'invalid type. Got {type(content)}')
 
 
-def default_headers_from_content(content: bytes):
+def default_headers_from_content(content: bytes) -> Headers:
     content_length = str(len(content))
     return [
         (b'content-type', b'text/html; charset=utf-8'),
@@ -34,7 +34,7 @@ def _simple_response(content: ResponseTypes,
             else default_headers_from_content(response_types_to_bytes(content))))
 
 
-def _status_response(status_code: int):
+def _status_response(status_code: int) -> Callable:
     def inner(content: ResponseTypes,
               headers: Optional[Headers]=None) -> HttpResponse:
         return _simple_response(content,

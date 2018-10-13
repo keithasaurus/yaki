@@ -24,7 +24,7 @@ def regex_route_matcher(pattern: Pattern) -> RouteMatcher:
     if isinstance(pattern, str):
         pattern = re.compile(pattern)
 
-    def inner(url: str):
+    def inner(url: str) -> Optional[Dict[str, str]]:
         return regex_match_to_str_dict(pattern, url)
 
     return inner

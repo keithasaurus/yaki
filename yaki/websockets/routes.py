@@ -1,4 +1,5 @@
-from yaki.utils.types import Scope
+from typing import Tuple
+from yaki.utils.types import AsgiInstance, Scope
 from yaki.websockets.endpoints import ws_endpoint
 from yaki.websockets.types import WSApp
 
@@ -7,7 +8,7 @@ class Asgi404(Exception):
     pass
 
 
-def route_ws(config: WSApp, scope: Scope):
+def route_ws(config: WSApp, scope: Scope) -> Tuple[bool, AsgiInstance]:
     path = scope['path']
 
     assert isinstance(path, str)

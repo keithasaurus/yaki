@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Union
+from typing import Callable, Dict, Tuple, Union
 from yaki.http.routes import route_http
 from yaki.http.types import HttpApp
 from yaki.utils.types import AsgiInstance, Scope
@@ -9,13 +9,8 @@ from yaki.websockets.types import WSApp
 AppConfig = Union[HttpApp, WSApp]
 
 
-def yaki(*apps: AppConfig):
-    """
-    Typically you shouldn't need more than one or two apps: one for http
-    and one for websockets. If, however, you want something like
-    different middleware for different parts of your project, you can
-    specify that with multiple apps.
-    """
+def _app_configs_to_routers_dict(
+        apps: Tuple[AppConfig, ...]) -> Dict[str, Tuple[Callable, ...]]:
     http_apps = []
     websocket_apps = []
 
@@ -32,10 +27,20 @@ def yaki(*apps: AppConfig):
     if len(websocket_apps) == 0:
         websocket_apps = [WSApp(routes=tuple())]
 
-    route_choices = {
+    return {
         'http': tuple(partial(route_http, conf) for conf in http_apps),
         'websocket': tuple(partial(route_ws, conf) for conf in websocket_apps)
     }
+
+
+def yaki(*apps: AppConfig) -> Callable:
+    """
+    Typically you shouldn't need more than one or two apps: one for http
+    and one for websockets. If, however, you want something like
+    different middleware for different parts of your project, you can
+    specify that with multiple apps.
+    """
+    route_choices = _app_configs_to_routers_dict(apps)
 
     def get_route(scope: Scope) -> AsgiInstance:
         scope_type = scope['type']
@@ -49,10 +54,10 @@ def yaki(*apps: AppConfig):
             found, endpoint = app_router(scope)
 
             if found:
-                return endpoint
+                return endpoint  # type: ignore
             else:
                 if i == len(app_routers) - 1:
-                    return endpoint
+                    return endpoint  # type: ignore
         else:
             raise Exception('Should have returned a response')
 

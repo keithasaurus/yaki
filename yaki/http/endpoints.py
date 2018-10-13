@@ -1,5 +1,5 @@
 from types import SimpleNamespace
-from typing import Union
+from typing import Callable, Union
 from yaki.http.types import (
     HttpDisconnect,
     HttpRequest,
@@ -94,7 +94,7 @@ async def wait_for_request(scope: Scope,
             raise ValueError(f"got unexpected key for type: `{event}`")
 
 
-def http_endpoint(func: HttpRequestResponseView):
+def http_endpoint(func: HttpRequestResponseView) -> Callable:
     def app(scope: Scope) -> AsgiInstance:
         async def awaitable(receive: Receiver,
                             send: Sender) -> None:

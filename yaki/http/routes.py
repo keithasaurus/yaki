@@ -36,7 +36,8 @@ def method_view_to_view_func(method: str,
     return ret_view_func
 
 
-def route_http(config: HttpApp, scope: Scope):
+def route_http(config: HttpApp,
+               scope: Scope) -> Tuple[bool, HttpRequestResponseView]:
     path = scope['path']
     assert isinstance(path, str)
 
