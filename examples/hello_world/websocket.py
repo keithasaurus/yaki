@@ -19,10 +19,13 @@ async def ws_hello(scope: WSScope,
     connect = await receive()
     assert isinstance(connect, WSConnect)
     await send(WSAccept(subprotocol=None))
+
     await send(WSSend("Hello"))
+
     await asyncio.sleep(1)
+
     await send(WSSend("world"))
-    await asyncio.sleep(1)
+
     await send(WSClose(1000))
 
 
