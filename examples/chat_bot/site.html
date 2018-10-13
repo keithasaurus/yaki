@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Chat App!</title>
+</head>
+<body>
+    <div>
+        <h1>AI Chat</h1>
+        <div>
+            <input type="text" id="user-input"/>
+            <input type="submit" id="send-button" value="Send Message">
+        </div>
+        <ul class="chat-box">
+
+        </ul>
+    </div>
+    <script>
+        const chatBox = document.querySelector('.chat-box');
+
+        function appendNewText(text){
+            const newLi = document.createElement("li");
+            newLi.appendChild(document.createTextNode(text));
+            chatBox.appendChild(newLi)
+        }
+
+        const chatWS = new WebSocket("ws://127.0.0.1:5000/chat");
+        chatWS.onclose = () => appendNewText("The bot left :/");
+        chatWS.onerror = () => appendNewText("Whoops, something went wrong!");
+
+        chatWS.onmessage = (evt) => appendNewText(`Bot: ${evt.data}`);
+
+        const textInput = document.querySelector('#user-input');
+
+        document.querySelector('#send-button').onclick = (evt) => {
+            const text = textInput.value;
+            appendNewText(`You: ${text}`);
+            chatWS.send(text);
+            textInput.value = ''
+        }
+    </script>
+</body>
+</html>

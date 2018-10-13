@@ -33,12 +33,13 @@ def headers(draw):
             min_size=2,
             max_size=2),
         min_size=0,
-        max_size=15))
+        max_size=8))
 
 
 @st.composite
 def host_and_port(draw):
-    return [draw(st.text(min_size=1)), random.randint(1, 10000)]
+    return [draw(st.text(min_size=1, max_size=20)),
+            draw(st.integers(1, 10000))]
 
 
 @st.composite
