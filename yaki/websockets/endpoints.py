@@ -1,3 +1,4 @@
+from types import MappingProxyType, SimpleNamespace
 from typing import Callable, Dict
 from yaki.types import (
     AsgiEvent,
@@ -14,8 +15,9 @@ from yaki.websockets.types import (
     WSClose,
     WSConnect,
     WSDisconnect,
+    WSInbound,
     WSIncomingEvent,
-    WSOutgoingEvent,
+    WSOutbound,
     WSReceive,
     WSScope,
     WSSend,
@@ -42,7 +44,7 @@ def ws_close_to_dict(event: WSClose) -> AsgiEvent:
     return event_to_dict("close", {"code": event.code})
 
 
-def ws_outgoing_to_event_dict(event: WSOutgoingEvent) -> AsgiEvent:
+def ws_outgoing_to_event_dict(event: WSOutbound) -> AsgiEvent:
     if isinstance(event, WSAccept):
         return event_to_dict("accept", {"subprotocol": event.subprotocol})
     elif isinstance(event, WSSend):
@@ -53,7 +55,7 @@ def ws_outgoing_to_event_dict(event: WSOutgoingEvent) -> AsgiEvent:
     elif isinstance(event, WSDisconnect):
         return ws_disconnect_to_dict(event)
 
-    raise TypeError(f"type `{type(event)}` is not a valid WSOutgoingEvent")
+    raise TypeError(f"type `{type(event)}` is not a valid WSOutbound")
 
 
 def _event_to_receive(event: AsgiEvent) -> WSReceive:
@@ -75,7 +77,7 @@ def _event_to_close(event: AsgiEvent) -> WSClose:
     return WSClose(code=code)
 
 
-def ws_incoming_to_datatype(event: AsgiEvent) -> WSIncomingEvent:
+def ws_incoming_to_datatype(event: AsgiEvent) -> WSInbound:
     convert_funcs: Dict[str, Callable[[AsgiEvent], WSIncomingEvent]] = {
         "connect": lambda x: WSConnect(),
         "receive": _event_to_receive,
@@ -87,7 +89,11 @@ def ws_incoming_to_datatype(event: AsgiEvent) -> WSIncomingEvent:
     assert isinstance(event_type, str)
     event_type = event_type.replace('websocket.', '')
 
-    return convert_funcs[event_type](event)
+    return WSInbound(
+        custom=SimpleNamespace(),
+        event=convert_funcs[event_type](event),
+        orig=MappingProxyType(event)
+    )
 
 
 def asgi_ws_scope_to_datatype(scope: AsgiEvent) -> WSScope:
@@ -132,10 +138,10 @@ def ws_endpoint(func: WSView) -> Callable[[Scope], AsgiInstance]:
     def app(scope: Scope) -> AsgiInstance:
         async def awaitable(receiver: Receiver,
                             send: Sender) -> None:
-            async def wrapped_receiver() -> WSIncomingEvent:
+            async def wrapped_receiver() -> WSInbound:
                 return ws_incoming_to_datatype(await receiver())
 
-            async def wrapped_send(event: WSOutgoingEvent) -> None:
+            async def wrapped_send(event: WSOutbound) -> None:
                 await send(ws_outgoing_to_event_dict(event))
 
             await func(asgi_ws_scope_to_datatype(scope),

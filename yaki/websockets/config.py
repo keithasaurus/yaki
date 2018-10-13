@@ -1,7 +1,6 @@
 from typing import Iterable
-
 from yaki.routing.matchers import bracket_route_matcher
-from yaki.websockets.types import WSProtoRoute, WSApp
+from yaki.websockets.types import WSApp, WSProtoRoute
 
 
 def ws_app(routes: Iterable[WSProtoRoute]) -> WSApp:

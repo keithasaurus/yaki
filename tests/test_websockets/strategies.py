@@ -25,24 +25,31 @@ def asgi_ws_scope(draw) -> Scope:
     }
 
 
-@st.composite
-def asgi_ws_connect(draw):
+def asgi_ws_connect():
     return {"type": "websocket.connect"}
 
 
 @st.composite
-def asgi_ws_receive(draw):
-    bytes_, text = draw(st.one_of(
-        st.tuples(st.none(), st.text(max_size=100)),
-        st.tuples(st.text().map(lambda x: bytes(x, encoding="utf8")), st.none())
-    ))
-
+def _asgi_receive_bytes(draw):
     return {
         "type": "websocket.receive",
-        # todo: bytes and text should alternate in which is None and which isn't
-        "bytes": bytes_,
-        "text": text
+        "bytes": draw(st.text().map(lambda x: x.encode("utf8"))),
+        "text": None
     }
+
+
+@st.composite
+def _asgi_receive_text(draw):
+    return {
+        "type": "websocket.receive",
+        "bytes": None,
+        "text": draw(st.text(max_size=100))
+    }
+
+
+@st.composite
+def asgi_ws_receive(draw):
+    return draw(st.one_of(_asgi_receive_bytes(), _asgi_receive_text()))
 
 
 @st.composite
@@ -57,7 +64,7 @@ def asgi_ws_close(draw):
 @st.composite
 def asgi_ws_disconnect(draw):
     return {
-        "type": "websocket.close",
+        "type": "websocket.disconnect",
         # todo: optional kwarg
         'code': draw(st.integers())
     }

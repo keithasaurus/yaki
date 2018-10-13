@@ -20,22 +20,20 @@ import asyncio
 
 class WSEndpointTests(TestCase):
     @given(asgi_ws_scope(),
-           asgi_ws_connect(),
-           st.lists(asgi_ws_receive()),
+           st.lists(asgi_ws_receive(), max_size=5),
            st.from_type(WSAccept),
-           st.lists(st.from_type(WSSend)),
+           st.lists(st.from_type(WSSend), max_size=5),
            st.from_type(WSClose),
            st.from_type(WSDisconnect))
     @settings(max_examples=20)
     def test_receive_works(self,
                            test_scope,
-                           test_connect_event,
                            test_receive_events,
                            test_accept_event,
                            test_send_events,
                            test_close_event,
                            test_disconnect):
-        incoming_events = [test_connect_event] + test_receive_events
+        incoming_events = [asgi_ws_connect()] + test_receive_events
 
         iter_incoming = iter(incoming_events)
 
@@ -73,3 +71,4 @@ class WSEndpointTests(TestCase):
             send_destination,
             [ws_outgoing_to_event_dict(evt) for evt in outgoing_events]
         )
+#

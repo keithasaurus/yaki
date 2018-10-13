@@ -1,5 +1,15 @@
-from typing import Awaitable, Callable, List, NamedTuple, Optional, Set, Tuple, Union
-
+from dataclasses import dataclass
+from types import SimpleNamespace
+from typing import (
+    Awaitable,
+    Callable,
+    List,
+    Mapping,
+    NamedTuple,
+    Optional,
+    Tuple,
+    Union
+)
 from yaki.routing.matchers import RouteMatcher
 from yaki.routing.types import MatcherOrStr
 from yaki.types import AsgiEvent, HostPort
@@ -9,19 +19,23 @@ class WSConnect(NamedTuple):
     pass
 
 
-class WSAccept(NamedTuple):
+@dataclass
+class WSAccept:
     subprotocol: Optional[str]
 
 
-class WSSend(NamedTuple):
+@dataclass
+class WSSend:
     content: Union[str, bytes]
 
 
-class WSClose(NamedTuple):
+@dataclass
+class WSClose:
     code: int
 
 
-class WSDisconnect(NamedTuple):
+@dataclass
+class WSDisconnect:
     code: int
 
 
@@ -43,12 +57,19 @@ class WSScope(NamedTuple):
 
 WSIncomingEvent = Union[WSConnect, WSReceive, WSDisconnect, WSClose]
 
-WSOutgoingEvent = Union[WSAccept, WSSend, WSDisconnect, WSClose]
+
+class WSInbound(NamedTuple):
+    custom: SimpleNamespace
+    event: WSIncomingEvent
+    orig: Mapping
 
 
-TypedReceiver = Callable[[], Awaitable[WSIncomingEvent]]
+WSOutbound = Union[WSAccept, WSSend, WSDisconnect, WSClose]
 
-TypedSender = Callable[[WSOutgoingEvent], Awaitable[None]]
+
+TypedReceiver = Callable[[], Awaitable[WSInbound]]
+
+TypedSender = Callable[[WSOutbound], Awaitable[None]]
 
 
 WSView = Callable[[WSScope, TypedReceiver, TypedSender], Awaitable[None]]
@@ -61,5 +82,3 @@ WSRoute = Tuple[RouteMatcher, WSView]
 
 class WSApp(NamedTuple):
     routes: Tuple[WSRoute, ...]
-
-
