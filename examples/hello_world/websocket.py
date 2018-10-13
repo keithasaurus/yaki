@@ -1,28 +1,21 @@
 from yaki.apps import yaki
 from yaki.websockets.config import ws_app
 from yaki.websockets.types import (
-    TypedReceiver,
-    TypedSender,
     WSAccept,
     WSClose,
-    WSConnect,
+    WSReceiver,
     WSScope,
-    WSSend
+    WSSend,
+    WSSender
 )
 
-import asyncio
 
+async def ws_hello(scope: WSScope, receive: WSReceiver, send: WSSender) -> None:
+    await receive()  # this is the connect message
 
-async def ws_hello(scope: WSScope,
-                   receive: TypedReceiver,
-                   send: TypedSender) -> None:
-    connect = await receive()
-    assert isinstance(connect, WSConnect)
     await send(WSAccept(subprotocol=None))
 
     await send(WSSend("Hello"))
-
-    await asyncio.sleep(1)
 
     await send(WSSend("world"))
 

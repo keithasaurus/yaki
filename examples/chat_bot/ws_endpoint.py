@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from yaki.websockets.types import (
-    TypedReceiver,
-    TypedSender,
     WSAccept,
     WSClose,
     WSConnect,
@@ -10,8 +8,10 @@ from yaki.websockets.types import (
     WSInbound,
     WSOutbound,
     WSReceive,
+    WSReceiver,
     WSScope,
-    WSSend
+    WSSend,
+    WSSender
 )
 
 import asyncio
@@ -25,7 +25,7 @@ class ChatState:
     no_response_count: int
 
 
-async def check_bored(state: ChatState, send: TypedSender):
+async def check_bored(state: ChatState, send: WSSender):
     acceptable_wait = timedelta(seconds=10)
     while True:
         await asyncio.sleep(10)
@@ -41,8 +41,8 @@ async def check_bored(state: ChatState, send: TypedSender):
 
 
 async def ws_chat_bot(scope: WSScope,
-                      receive: TypedReceiver,
-                      send: TypedSender) -> None:
+                      receive: WSReceiver,
+                      send: WSSender) -> None:
     state = ChatState(disconnected=False,
                       last_client_message=datetime.now(),
                       no_response_count=0)

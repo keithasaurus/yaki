@@ -67,12 +67,12 @@ class WSInbound(NamedTuple):
 WSOutbound = Union[WSAccept, WSSend, WSDisconnect, WSClose]
 
 
-TypedReceiver = Callable[[], Awaitable[WSInbound]]
+WSReceiver = Callable[[], Awaitable[WSInbound]]
 
-TypedSender = Callable[[WSOutbound], Awaitable[None]]
+WSSender = Callable[[WSOutbound], Awaitable[None]]
 
 
-WSView = Callable[[WSScope, TypedReceiver, TypedSender], Awaitable[None]]
+WSView = Callable[[WSScope, WSReceiver, WSSender], Awaitable[None]]
 
 
 WSProtoRoute = Tuple[MatcherOrStr, WSView]
