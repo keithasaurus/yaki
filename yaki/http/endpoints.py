@@ -1,4 +1,4 @@
-from types import SimpleNamespace
+from types import MappingProxyType, SimpleNamespace
 from typing import Callable, Union
 from yaki.http.types import (
     HttpDisconnect,
@@ -70,7 +70,7 @@ def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:
         query_string=query_string,
         root_path=root_path,
         scheme=scheme,
-        scope_orig=scope,
+        scope_orig=MappingProxyType(scope),
         server=list_hostport_to_datatype(scope.get("server")),
     )
 

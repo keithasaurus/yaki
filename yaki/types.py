@@ -4,6 +4,7 @@ from typing import (
     Callable,
     Dict,
     List,
+    Mapping,
     NamedTuple,
     Optional,
     Tuple,
@@ -14,9 +15,9 @@ from typing import (
 # of mypy's current limitations
 AsgiValue = Union[bytes, str, int, float, List[Any], Dict[str, Any], bool, None]
 
-AsgiEvent = Dict[str, AsgiValue]
+AsgiEvent = Mapping[str, AsgiValue]
 
-Scope = Dict[str, AsgiValue]
+Scope = Mapping[str, AsgiValue]
 
 Receiver = Callable[[], Awaitable[AsgiEvent]]
 
