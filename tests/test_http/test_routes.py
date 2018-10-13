@@ -10,6 +10,7 @@ from tests.test_http.utils import call_http_endpoint, http_response_to_expected_
 from typing import Callable
 from unittest import TestCase
 from yaki.http.endpoints import asgi_to_http_request
+from yaki.http.methods import DELETE, GET, POST, PUT
 from yaki.http.routes import method_view_to_view_func, normalize_routes, route_http
 from yaki.http.types import (
     HttpApp,
@@ -17,7 +18,6 @@ from yaki.http.types import (
     HttpRequestResponseView,
     HttpResponse
 )
-from yaki.http.utils.status import DELETE, GET, POST, PUT
 from yaki.http.views import DEFAULT_404_RESPONSE, DEFAULT_405_RESPONSE
 from yaki.routing.matchers import bracket_route_matcher, regex_route_matcher
 

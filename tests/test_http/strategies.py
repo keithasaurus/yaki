@@ -7,6 +7,17 @@ from tests.utils.strategies import (
     scope_extensions
 )
 from types import SimpleNamespace
+from yaki.http.methods import (
+    CONNECT,
+    DELETE,
+    GET,
+    HEAD,
+    OPTIONS,
+    PATCH,
+    POST,
+    PUT,
+    TRACE
+)
 from yaki.http.types import HttpRequest, HttpResponse
 from yaki.utils.types import HostPort
 
@@ -18,15 +29,15 @@ def gen_http_version(draw):
 
 @st.composite
 def gen_http_method(draw):
-    return draw(st.sampled_from(["CONNECT",
-                                 "DELETE",
-                                 "GET",
-                                 "HEAD",
-                                 "OPTIONS",
-                                 "PATCH",
-                                 "POST",
-                                 "PUT",
-                                 "TRACE"]))
+    return draw(st.sampled_from([CONNECT,
+                                 DELETE,
+                                 GET,
+                                 HEAD,
+                                 OPTIONS,
+                                 PATCH,
+                                 POST,
+                                 PUT,
+                                 TRACE]))
 
 
 @st.composite
