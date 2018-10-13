@@ -19,7 +19,7 @@ from yaki.websockets.types import (
     WSReceive,
     WSScope,
     WSSend,
-    WSViewFunc
+    WSView
 )
 
 
@@ -128,7 +128,7 @@ def asgi_ws_scope_to_datatype(scope: AsgiEvent) -> WSScope:
     )
 
 
-def ws_endpoint(func: WSViewFunc) -> Callable[[Scope], AsgiInstance]:
+def ws_endpoint(func: WSView) -> Callable[[Scope], AsgiInstance]:
     def app(scope: Scope) -> AsgiInstance:
         async def awaitable(receiver: Receiver,
                             send: Sender) -> None:
