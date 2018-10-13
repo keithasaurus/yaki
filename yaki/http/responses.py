@@ -1,6 +1,6 @@
 from typing import Callable, Optional
 from yaki.http.types import HttpResponse, ResponseTypes
-from yaki.utils.types import Headers
+from yaki.types import Headers
 
 
 def response_types_to_bytes(content: ResponseTypes) -> bytes:

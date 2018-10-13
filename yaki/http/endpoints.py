@@ -6,7 +6,7 @@ from yaki.http.types import (
     HttpRequestResponseView,
     HttpResponse
 )
-from yaki.utils.types import (
+from yaki.types import (
     AsgiInstance,
     list_headers_to_tuples,
     list_hostport_to_datatype,

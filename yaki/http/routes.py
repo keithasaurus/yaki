@@ -14,7 +14,7 @@ from yaki.http.types import (
 from yaki.http.views import http_404_view, http_405_view
 from yaki.routing.matchers import bracket_route_matcher
 from yaki.routing.types import MatcherOrStr, RouteMatcher
-from yaki.utils.types import Scope
+from yaki.types import Scope
 
 
 def method_view_to_view_func(method: str,

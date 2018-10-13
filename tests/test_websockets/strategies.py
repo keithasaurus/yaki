@@ -5,7 +5,7 @@ from tests.utils.strategies import (
     query_string,
     scope_extensions
 )
-from yaki.utils.types import Scope
+from yaki.types import Scope
 
 
 @st.composite

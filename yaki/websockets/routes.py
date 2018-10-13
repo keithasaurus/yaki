@@ -1,5 +1,5 @@
 from typing import Tuple
-from yaki.utils.types import AsgiInstance, Scope
+from yaki.types import AsgiInstance, Scope
 from yaki.websockets.endpoints import ws_endpoint
 from yaki.websockets.types import WSApp
 

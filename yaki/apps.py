@@ -2,7 +2,7 @@ from functools import partial
 from typing import Callable, Dict, Tuple, Union
 from yaki.http.routes import route_http
 from yaki.http.types import HttpApp
-from yaki.utils.types import AsgiInstance, Scope
+from yaki.types import AsgiInstance, Scope
 from yaki.websockets.routes import route_ws
 from yaki.websockets.types import WSApp
 
@@ -36,7 +36,7 @@ def _app_configs_to_routers_dict(
 def yaki(*apps: AppConfig) -> Callable:
     """
     Typically you shouldn't need more than one or two apps: one for http
-    and one for websockets. If, however, you want something like
+    and maybe one for websockets. If, however, you want something like
     different middleware for different parts of your project, you can
     specify that with multiple apps.
     """

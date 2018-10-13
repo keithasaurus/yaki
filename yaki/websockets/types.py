@@ -1,6 +1,6 @@
 from typing import Awaitable, Callable, List, NamedTuple, Optional, Tuple, Union
 from yaki.routing.matchers import RouteMatcher
-from yaki.utils.types import AsgiEvent, HostPort
+from yaki.types import AsgiEvent, HostPort
 
 
 class WSConnect(NamedTuple):

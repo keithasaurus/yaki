@@ -1,5 +1,5 @@
 from typing import Callable, Dict
-from yaki.utils.types import (
+from yaki.types import (
     AsgiEvent,
     AsgiInstance,
     AsgiValue,

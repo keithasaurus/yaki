@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import List
 from yaki.http.types import HttpResponse
-from yaki.utils.types import AsgiEvent, AsgiInstance
+from yaki.types import AsgiEvent, AsgiInstance
 
 import asyncio
 

@@ -6,7 +6,7 @@ from tests.test_websockets.strategies import (
     asgi_ws_scope
 )
 from unittest import TestCase
-from yaki.utils.types import AsgiEvent, Scope
+from yaki.types import AsgiEvent, Scope
 from yaki.websockets.endpoints import (
     asgi_ws_scope_to_datatype,
     ws_endpoint,

@@ -19,7 +19,7 @@ from yaki.http.methods import (
     TRACE
 )
 from yaki.http.types import HttpRequest, HttpResponse
-from yaki.utils.types import HostPort
+from yaki.types import HostPort
 
 
 @st.composite

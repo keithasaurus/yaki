@@ -8,7 +8,7 @@ from tests.test_http.utils import call_http_endpoint, http_response_to_expected_
 from unittest import TestCase
 from yaki.http.endpoints import asgi_to_http_request, http_endpoint, respond
 from yaki.http.types import HttpRequest, HttpResponse
-from yaki.utils.types import AsgiEvent
+from yaki.types import AsgiEvent
 
 import asyncio
 

@@ -15,7 +15,7 @@ from typing import (
 )
 from yaki.routing.matchers import RouteMatcher
 from yaki.routing.types import MatcherOrStr
-from yaki.utils.types import Headers, HostPort, Scope
+from yaki.types import Headers, HostPort, Scope
 
 
 class HttpRequest(NamedTuple):
