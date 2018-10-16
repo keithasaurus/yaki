@@ -27,7 +27,7 @@ class HttpRequest(NamedTuple):
     http_version: str
     method: str
     path: str
-    query_string: bytes
+    query_params: Dict[str, List[str]]
     root_path: str
     scheme: str
     scope_orig: Scope

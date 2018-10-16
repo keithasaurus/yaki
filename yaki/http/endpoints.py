@@ -1,5 +1,6 @@
 from types import MappingProxyType, SimpleNamespace
 from typing import Callable, Union
+from urllib.parse import parse_qs
 from yaki.http.types import (
     HttpDisconnect,
     HttpRequest,
@@ -67,7 +68,7 @@ def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:
         http_version=http_version,
         method=method,
         path=path,
-        query_string=query_string,
+        query_params=parse_qs(query_string.decode("utf-8")),
         root_path=root_path,
         scheme=scheme,
         scope_orig=MappingProxyType(scope),
