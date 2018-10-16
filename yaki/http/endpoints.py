@@ -66,7 +66,7 @@ def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:
         extensions=extensions,
         headers=list_headers_to_tuples(scope['headers']),
         http_version=http_version,
-        method=method,
+        method=method.upper(),  # just in case
         path=path,
         query_params=parse_qs(query_string.decode("utf-8")),
         root_path=root_path,
