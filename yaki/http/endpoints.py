@@ -1,5 +1,5 @@
 from types import MappingProxyType, SimpleNamespace
-from typing import Callable, Union
+from typing import Awaitable, Callable, Union
 from urllib.parse import parse_qs
 from yaki.http.types import (
     HttpDisconnect,
@@ -94,21 +94,46 @@ async def wait_for_request(scope: Scope,
         else:
             raise ValueError(f"got unexpected key for type: `{event}`")
 
+#
+# def http_endpoint(func: HttpRequestResponseView) -> Callable:
+#     def app(scope: Scope) -> AsgiInstance:
+#         async def awaitable(receive: Receiver,
+#                             send: Sender) -> None:
+#
+#             request_result = await wait_for_request(scope, receive)
+#
+#             if isinstance(request_result, HttpRequest):
+#                 response = await func(request_result)
+#                 await respond(response, send)
+#             else:
+#                 # todo: handle
+#                 raise Exception("client disconnected!")
+#
+#         return awaitable
+#
+#     return app
+
+
+def http_endpoint_base(func: Callable[[Scope, Receiver, Sender], Awaitable[None]]
+                       ) -> Callable:
+    def app(scope: Scope) -> AsgiInstance:
+        async def awaitable(receive: Receiver, send: Sender) -> None:
+            await func(scope, receive, send)
+        return awaitable
+    return app
+
 
 def http_endpoint(func: HttpRequestResponseView) -> Callable:
-    def app(scope: Scope) -> AsgiInstance:
-        async def awaitable(receive: Receiver,
-                            send: Sender) -> None:
+    async def wrapped_func(scope: Scope,
+                           receive: Receiver,
+                           send: Sender) -> None:
+        request_result = await wait_for_request(scope, receive)
 
-            request_result = await wait_for_request(scope, receive)
+        if isinstance(request_result, HttpRequest):
+            response = await func(request_result)
+            await respond(response, send)
+        else:
+            # todo: handle
+            raise Exception("client disconnected!")
 
-            if isinstance(request_result, HttpRequest):
-                response = await func(request_result)
-                await respond(response, send)
-            else:
-                # todo: handle
-                raise Exception("client disconnected!")
-
-        return awaitable
-
-    return app
+    return http_endpoint_base(wrapped_func)
