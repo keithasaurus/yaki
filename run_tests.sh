@@ -9,7 +9,6 @@ mypy --ignore-missing-imports tests examples || exit $?
 echo "Running tests with coverage"
 coverage run -m unittest discover tests || exit $?
 
-# this number needs to move up big time. only this low temporarily
 COVERAGE_THRESHOLD=94
 coverage report --fail-under "$COVERAGE_THRESHOLD" > /dev/null 2>&1
 
