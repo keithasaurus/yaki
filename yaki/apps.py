@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from functools import partial
-from typing import Callable, Dict, Tuple, Union
+from typing import Callable, Tuple, Union
 from yaki.http.routes import route_http
 from yaki.http.types import HttpApp
 from yaki.types import AsgiInstance, Scope
@@ -9,8 +10,13 @@ from yaki.websockets.types import WSApp
 AppConfig = Union[HttpApp, WSApp]
 
 
-def _app_configs_to_routers_dict(
-        apps: Tuple[AppConfig, ...]) -> Dict[str, Tuple[Callable, ...]]:
+@dataclass
+class Apps:
+    http: Tuple[Callable[[Scope], Tuple[bool, AsgiInstance]], ...]
+    websocket: Tuple[Callable[[Scope], Tuple[bool, AsgiInstance]], ...]
+
+
+def _app_configs_to_routers_dict(apps: Tuple[AppConfig, ...]) -> Apps:
     http_apps = []
     websocket_apps = []
 
@@ -27,13 +33,13 @@ def _app_configs_to_routers_dict(
     if len(websocket_apps) == 0:
         websocket_apps = [WSApp(routes=tuple())]
 
-    return {
-        'http': tuple(partial(route_http, conf) for conf in http_apps),
-        'websocket': tuple(partial(route_ws, conf) for conf in websocket_apps)
-    }
+    return Apps(
+        http=tuple(partial(route_http, conf) for conf in http_apps),
+        websocket=tuple(partial(route_ws, conf) for conf in websocket_apps),
+    )
 
 
-def yaki(*apps: AppConfig) -> Callable:
+def yaki(*apps: AppConfig) -> Callable[[Scope], AsgiInstance]:
     """
     Typically you shouldn't need more than one or two apps: one for http
     and maybe one for websockets. If, however, you want something like
@@ -43,10 +49,14 @@ def yaki(*apps: AppConfig) -> Callable:
     route_choices = _app_configs_to_routers_dict(apps)
 
     def get_route(scope: Scope) -> AsgiInstance:
-        scope_type = scope['type']
+        scope_type = scope["type"]
         assert isinstance(scope_type, str)
-
-        app_routers = route_choices[scope_type]
+        if scope_type == "websocket":
+            app_routers = route_choices.websocket
+        elif scope_type == "http":
+            app_routers = route_choices.http
+        else:
+            raise AssertionError('type must be either "websocket" or "http"')
 
         for i, app_router in enumerate(app_routers):
             # if not found the app is expected to return
@@ -54,11 +64,11 @@ def yaki(*apps: AppConfig) -> Callable:
             found, endpoint = app_router(scope)
 
             if found:
-                return endpoint  # type: ignore
+                return endpoint
             else:
                 if i == len(app_routers) - 1:
-                    return endpoint  # type: ignore
+                    return endpoint
         else:
-            raise Exception('Should have returned a response')
+            raise Exception("Should have returned a response")
 
     return get_route

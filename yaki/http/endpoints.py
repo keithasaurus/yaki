@@ -5,7 +5,7 @@ from yaki.http.types import (
     HttpDisconnect,
     HttpRequest,
     HttpRequestResponseView,
-    HttpResponse
+    HttpResponse,
 )
 from yaki.types import (
     AsgiInstance,
@@ -13,45 +13,40 @@ from yaki.types import (
     list_hostport_to_datatype,
     Receiver,
     Scope,
-    Sender
+    Sender,
 )
 
 
-async def respond(response: HttpResponse,
-                  send: Sender) -> None:
+async def respond(response: HttpResponse, send: Sender) -> None:
     await send(
         {
             "type": "http.response.start",
             "status": response.status_code,
-            "headers": [list(x) for x in response.headers]
+            "headers": [list(x) for x in response.headers],
         }
     )
 
-    await send({"type": "http.response.body",
-                "body": response.body,
-                "more_body": False})
+    await send(
+        {"type": "http.response.body", "body": response.body, "more_body": False}
+    )
 
 
 def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:
     http_version, method, path, query_string = [
-        scope.get(k) for k
-        in ['http_version',
-            'method',
-            'path',
-            'query_string']
+        scope.get(k) for k in ["http_version", "method", "path", "query_string"]
     ]
     assert isinstance(path, str)
     assert isinstance(http_version, str)
     assert isinstance(method, str)
     assert isinstance(query_string, bytes)
 
-    scheme = scope.get('scheme', 'http')
-    root_path = scope.get('root_path', '')
+    scheme = scope.get("scheme", "http")
+    root_path = scope.get("root_path", "")
 
     assert isinstance(scheme, str)
     assert isinstance(root_path, str)
 
-    extensions = scope.get('extensions')
+    extensions = scope.get("extensions")
     if extensions is not None:
         assert isinstance(extensions, dict)
 
@@ -64,7 +59,7 @@ def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:
         client=list_hostport_to_datatype(scope.get("client")),
         custom=SimpleNamespace(),
         extensions=extensions,
-        headers=list_headers_to_tuples(scope['headers']),
+        headers=list_headers_to_tuples(scope["headers"]),
         http_version=http_version,
         method=method.upper(),  # just in case
         path=path,
@@ -76,8 +71,9 @@ def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:
     )
 
 
-async def wait_for_request(scope: Scope,
-                           receive: Receiver) -> Union[HttpRequest, HttpDisconnect]:
+async def wait_for_request(
+    scope: Scope, receive: Receiver
+) -> Union[HttpRequest, HttpDisconnect]:
     content = b""
     while True:
         event = await receive()
@@ -93,6 +89,7 @@ async def wait_for_request(scope: Scope,
             return HttpDisconnect()
         else:
             raise ValueError(f"got unexpected key for type: `{event}`")
+
 
 #
 # def http_endpoint(func: HttpRequestResponseView) -> Callable:
@@ -114,19 +111,20 @@ async def wait_for_request(scope: Scope,
 #     return app
 
 
-def http_endpoint_base(func: Callable[[Scope, Receiver, Sender], Awaitable[None]]
-                       ) -> Callable:
+def http_endpoint_base(
+    func: Callable[[Scope, Receiver, Sender], Awaitable[None]]
+) -> Callable[[Scope], AsgiInstance]:
     def app(scope: Scope) -> AsgiInstance:
         async def awaitable(receive: Receiver, send: Sender) -> None:
             await func(scope, receive, send)
+
         return awaitable
+
     return app
 
 
-def http_endpoint(func: HttpRequestResponseView) -> Callable:
-    async def wrapped_func(scope: Scope,
-                           receive: Receiver,
-                           send: Sender) -> None:
+def http_endpoint(func: HttpRequestResponseView) -> Callable[[Scope], AsgiInstance]:
+    async def wrapped_func(scope: Scope, receive: Receiver, send: Sender) -> None:
         request_result = await wait_for_request(scope, receive)
 
         if isinstance(request_result, HttpRequest):

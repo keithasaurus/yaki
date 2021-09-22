@@ -6,21 +6,13 @@ from yaki.websockets.config import ws_app
 
 app = yaki(
     # serve the html via yaki
-    http_app(
-        routes=[
-            ("/", serve_html_page)],
-        middleware=[]
-    ),
-
+    http_app(routes=[("/", serve_html_page)], middleware=[]),
     # provide a chatbot websocket
-    ws_app(
-        routes=[
-            ("/chat", ws_chat_bot)
-        ]
-    )
+    ws_app(routes=[("/chat", ws_chat_bot)]),
 )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="127.0.0.1", port=5000)

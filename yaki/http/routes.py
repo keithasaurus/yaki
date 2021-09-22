@@ -9,17 +9,17 @@ from yaki.http.types import (
     HttpProtoRouteThreeTuple,
     HttpProtoRouteTwoTuple,
     HttpRequestResponseView,
-    HttpRoute
+    HttpRoute,
 )
 from yaki.http.views import http_404_view, http_405_view
 from yaki.routing.matchers import bracket_route_matcher
 from yaki.routing.types import MatcherOrStr, RouteMatcher
-from yaki.types import Scope
+from yaki.types import Scope, AsgiInstance
 
 
-def method_view_to_view_func(method: str,
-                             parsed_params: Dict[str, str],
-                             method_view: HttpMethodView) -> HttpRequestResponseView:
+def method_view_to_view_func(
+    method: str, parsed_params: Dict[str, str], method_view: HttpMethodView
+) -> HttpRequestResponseView:
     if isinstance(method_view, dict):
         view_func = method_view.get(method.upper())
         if view_func is None:
@@ -36,19 +36,18 @@ def method_view_to_view_func(method: str,
     return ret_view_func
 
 
-def route_http(config: HttpApp,
-               scope: Scope) -> Tuple[bool, HttpRequestResponseView]:
-    path = scope['path']
+def route_http(config: HttpApp, scope: Scope) -> Tuple[bool, AsgiInstance]:
+    path = scope["path"]
     assert isinstance(path, str)
 
     for route_matcher, method_view in config.routes:
         route_match_result = route_matcher(path)
         if isinstance(route_match_result, dict):
-            scope_method = scope['method']
+            scope_method = scope["method"]
             assert isinstance(scope_method, str)
-            view_func = method_view_to_view_func(scope_method,
-                                                 route_match_result,
-                                                 method_view)
+            view_func = method_view_to_view_func(
+                scope_method, route_match_result, method_view
+            )
 
             found = True
             break
@@ -57,24 +56,22 @@ def route_http(config: HttpApp,
         view_func = http_404_view
         found = False
 
-    middleware_and_view_func = combine_middleware(config.middleware,
-                                                  view_func)
+    middleware_and_view_func = combine_middleware(config.middleware, view_func)
 
     return found, http_endpoint(middleware_and_view_func)(scope)
 
 
 def normalize_route_matcher(matcher: MatcherOrStr) -> RouteMatcher:
-    return (
-        bracket_route_matcher(matcher)
-        if isinstance(matcher, str) else matcher
-    )
+    return bracket_route_matcher(matcher) if isinstance(matcher, str) else matcher
 
 
 def three_tuple_proto_to_route(proto_route: HttpProtoRouteThreeTuple) -> HttpRoute:
     matcher, method_set, view = proto_route
 
-    return (normalize_route_matcher(matcher),
-            {method.upper(): view for method in method_set})
+    return (
+        normalize_route_matcher(matcher),
+        {method.upper(): view for method in method_set},
+    )
 
 
 def two_tuple_proto_to_route(proto_route: HttpProtoRouteTwoTuple) -> HttpRoute:
@@ -82,9 +79,7 @@ def two_tuple_proto_to_route(proto_route: HttpProtoRouteTwoTuple) -> HttpRoute:
 
     new_view: HttpMethodView = {}
     if isinstance(view, dict):
-        new_view = {
-            k.upper(): v for k, v in view.items()
-        }
+        new_view = {k.upper(): v for k, v in view.items()}
     else:
         new_view = view
 
@@ -93,9 +88,7 @@ def two_tuple_proto_to_route(proto_route: HttpProtoRouteTwoTuple) -> HttpRoute:
     return new_matcher, new_view
 
 
-def normalize_routes(
-        proto_routes: Iterable[HttpProtoRoute]
-) -> Tuple[HttpRoute, ...]:
+def normalize_routes(proto_routes: Iterable[HttpProtoRoute]) -> Tuple[HttpRoute, ...]:
     routes = []
     for proto_route in proto_routes:
         # note that mypy isn't able to determine that we're essentially

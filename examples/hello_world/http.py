@@ -5,19 +5,13 @@ from yaki.http.types import HttpRequest, HttpResponse
 
 
 async def view(request: HttpRequest) -> HttpResponse:
-    return response_200("Hello, world!")
+    return response_200("Hello, world!", [])
 
 
-app = yaki(
-    http_app(
-        routes=[
-            ("/", view)
-        ],
-        middleware=[]
-    )
-)
+app = yaki(http_app(routes=[("/", view)], middleware=[]))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host='127.0.0.1', port=5000)
+
+    uvicorn.run(app, host="127.0.0.1", port=5000)

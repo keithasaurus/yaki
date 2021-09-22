@@ -3,7 +3,7 @@ from hypothesis import strategies as st
 from tests.test_websockets.strategies import (
     asgi_ws_connect,
     asgi_ws_receive,
-    asgi_ws_scope
+    asgi_ws_scope,
 )
 from unittest import TestCase
 from yaki.types import AsgiEvent, Scope
@@ -11,7 +11,7 @@ from yaki.websockets.endpoints import (
     asgi_ws_scope_to_datatype,
     ws_endpoint,
     ws_incoming_to_datatype,
-    ws_outgoing_to_event_dict
+    ws_outgoing_to_event_dict,
 )
 from yaki.websockets.types import WSAccept, WSClose, WSDisconnect, WSSend
 
@@ -19,27 +19,33 @@ import asyncio
 
 
 class WSEndpointTests(TestCase):
-    @given(asgi_ws_scope(),
-           st.lists(asgi_ws_receive(), max_size=5),
-           st.from_type(WSAccept),
-           st.lists(st.from_type(WSSend), max_size=5),
-           st.from_type(WSClose),
-           st.from_type(WSDisconnect))
+    @given(
+        asgi_ws_scope(),
+        st.lists(asgi_ws_receive(), max_size=5),
+        st.from_type(WSAccept),
+        st.lists(st.from_type(WSSend), max_size=5),
+        st.from_type(WSClose),
+        st.from_type(WSDisconnect),
+    )
     @settings(max_examples=20)
-    def test_receive_works(self,
-                           test_scope,
-                           test_receive_events,
-                           test_accept_event,
-                           test_send_events,
-                           test_close_event,
-                           test_disconnect):
+    def test_receive_works(
+        self,
+        test_scope,
+        test_receive_events,
+        test_accept_event,
+        test_send_events,
+        test_close_event,
+        test_disconnect,
+    ):
         incoming_events = [asgi_ws_connect()] + test_receive_events
 
         iter_incoming = iter(incoming_events)
 
-        outgoing_events = [test_accept_event,
-                           test_close_event,
-                           test_disconnect] + test_send_events
+        outgoing_events = [
+            test_accept_event,
+            test_close_event,
+            test_disconnect,
+        ] + test_send_events
 
         async def ws_func(scope: Scope, receive, send) -> None:
             assert scope == asgi_ws_scope_to_datatype(test_scope)
@@ -69,6 +75,8 @@ class WSEndpointTests(TestCase):
 
         self.assertEqual(
             send_destination,
-            [ws_outgoing_to_event_dict(evt) for evt in outgoing_events]
+            [ws_outgoing_to_event_dict(evt) for evt in outgoing_events],
         )
+
+
 #

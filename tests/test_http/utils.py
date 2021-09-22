@@ -9,20 +9,21 @@ import asyncio
 def http_response_to_expected_parts(response: HttpResponse) -> List[AsgiEvent]:
     return [
         {
-            'type': 'http.response.start',
-            'status': response.status_code,
-            'headers': [list(x) for x in response.headers]
+            "type": "http.response.start",
+            "status": response.status_code,
+            "headers": [list(x) for x in response.headers],
         },
         {
-            'type': 'http.response.body',
-            'body': response.body,
-            'more_body': False,
-        }
+            "type": "http.response.body",
+            "body": response.body,
+            "more_body": False,
+        },
     ]
 
 
-def call_http_endpoint(endpoint: AsgiInstance,
-                       events: List[AsgiEvent]) -> List[AsgiEvent]:
+def call_http_endpoint(
+    endpoint: AsgiInstance, events: List[AsgiEvent]
+) -> List[AsgiEvent]:
     """
     given the events to receive, process and return the sent events in a list
     """

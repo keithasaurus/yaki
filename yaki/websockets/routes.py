@@ -9,7 +9,7 @@ class Asgi404(Exception):
 
 
 def route_ws(config: WSApp, scope: Scope) -> Tuple[bool, AsgiInstance]:
-    path = scope['path']
+    path = scope["path"]
 
     assert isinstance(path, str)
 
@@ -17,4 +17,4 @@ def route_ws(config: WSApp, scope: Scope) -> Tuple[bool, AsgiInstance]:
         if isinstance(route_matcher(path), dict):
             return True, ws_endpoint(ws_view_func)(scope)
     else:
-        raise Asgi404('todo: handle not found websocket!')
+        raise Asgi404("todo: handle not found websocket!")

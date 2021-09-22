@@ -6,7 +6,7 @@ from yaki.websockets.types import (
     WSReceiver,
     WSScope,
     WSSend,
-    WSSender
+    WSSender,
 )
 
 
@@ -22,15 +22,10 @@ async def ws_hello(scope: WSScope, receive: WSReceiver, send: WSSender) -> None:
     await send(WSClose(1000))
 
 
-app = yaki(
-    ws_app(
-        routes=[
-            ("/", ws_hello)
-        ]
-    )
-)
+app = yaki(ws_app(routes=[("/", ws_hello)]))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host='127.0.0.1', port=5000)
+
+    uvicorn.run(app, host="127.0.0.1", port=5000)

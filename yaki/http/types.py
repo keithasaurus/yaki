@@ -11,10 +11,9 @@ from typing import (
     Optional,
     Set,
     Tuple,
-    Union
+    Union,
 )
-from yaki.routing.matchers import RouteMatcher
-from yaki.routing.types import MatcherOrStr
+from yaki.routing.types import MatcherOrStr, RouteMatcher
 from yaki.types import Headers, HostPort, Scope
 
 
@@ -31,7 +30,7 @@ class HttpRequest(NamedTuple):
     root_path: str
     scheme: str
     scope_orig: Scope
-    server: Optional[HostPort]
+    server: HostPort
 
 
 # friendlier types
@@ -45,6 +44,7 @@ class HttpResponse:
     responses are large, it may be problematic to create whole
     new objects in middleware
     """
+
     status_code: int
     headers: Headers
     body: bytes
@@ -58,8 +58,7 @@ class HttpDisconnect(NamedTuple):
 HttpRequestResponseView = Callable[[HttpRequest], Awaitable[HttpResponse]]
 
 HttpView = Union[
-    Callable[[HttpRequest, Arg(str)], Awaitable[HttpResponse]],
-    HttpRequestResponseView
+    Callable[[HttpRequest, Arg(str)], Awaitable[HttpResponse]], HttpRequestResponseView
 ]
 
 # if the route is just a view it accepts all methods.
@@ -71,14 +70,12 @@ HttpRoute = Tuple[RouteMatcher, HttpMethodView]
 HttpProtoRouteThreeTuple = Tuple[MatcherOrStr, Set[str], HttpView]
 HttpProtoRouteTwoTuple = Tuple[MatcherOrStr, HttpMethodView]
 
-HttpProtoRoute = Union[
-    HttpProtoRouteTwoTuple,
-    HttpProtoRouteThreeTuple
+HttpProtoRoute = Union[HttpProtoRouteTwoTuple, HttpProtoRouteThreeTuple]
+
+
+HttpMiddlewareFunc = Callable[
+    [HttpRequestResponseView, HttpRequest], Awaitable[HttpResponse]
 ]
-
-
-HttpMiddlewareFunc = Callable[[HttpRequestResponseView, HttpRequest],
-                              Awaitable[HttpResponse]]
 
 
 class HttpApp(NamedTuple):

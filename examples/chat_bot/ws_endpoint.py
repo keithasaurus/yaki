@@ -11,7 +11,7 @@ from yaki.websockets.types import (
     WSReceiver,
     WSScope,
     WSSend,
-    WSSender
+    WSSender,
 )
 
 import asyncio
@@ -40,12 +40,10 @@ async def check_bored(state: ChatState, send: WSSender):
                 await send(WSSend("Hey, say something!"))
 
 
-async def ws_chat_bot(scope: WSScope,
-                      receive: WSReceiver,
-                      send: WSSender) -> None:
-    state = ChatState(disconnected=False,
-                      last_client_message=datetime.now(),
-                      no_response_count=0)
+async def ws_chat_bot(scope: WSScope, receive: WSReceiver, send: WSSender) -> None:
+    state = ChatState(
+        disconnected=False, last_client_message=datetime.now(), no_response_count=0
+    )
 
     async def protected_send(event: WSOutbound):
         if not state.disconnected:
@@ -74,17 +72,19 @@ async def ws_chat_bot(scope: WSScope,
             state.last_client_message = datetime.now()
 
             if len(message.event.content) == 0:
-                message: str = "That's, like, zero information."
+                resp: str = "That's, like, zero information."
             else:
-                message = random.choice([
-                    "That's nice. Tell me something else.",
-                    "Sorry, I don't care about that. Be more entertaining, please.",
-                    "...",
-                    "...SMH",
-                    'I like the way you think.',
-                ])
+                resp = random.choice(
+                    [
+                        "That's nice. Tell me something else.",
+                        "Sorry, I don't care about that. Be more entertaining, please.",
+                        "...",
+                        "...SMH",
+                        "I like the way you think.",
+                    ]
+                )
 
-            await protected_send(WSSend(message))
+            await protected_send(WSSend(resp))
 
         elif isinstance(message.event, WSConnect):
             # already received a connect request

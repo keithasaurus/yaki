@@ -6,9 +6,8 @@ from typing import (
     List,
     Mapping,
     NamedTuple,
-    Optional,
     Tuple,
-    Union
+    Union,
 )
 
 # Note the Anys here should be recursive AsgiValue, but are not because
@@ -57,16 +56,13 @@ def list_headers_to_tuples(val: AsgiValue) -> Headers:
     return headers
 
 
-def list_hostport_to_datatype(val: Optional[AsgiValue]) -> Optional[HostPort]:
+def list_hostport_to_datatype(val: AsgiValue) -> HostPort:
     """
     Currently this is the same for websockets and http, but that could change
     """
-    if val is None:
-        return None
-    else:
-        assert isinstance(val, (list, tuple))
-        assert len(val) == 2
-        host, port = val
-        assert isinstance(host, str)
-        assert isinstance(port, int)
-        return HostPort(host=host, port=port)
+    assert isinstance(val, (list, tuple))
+    assert len(val) == 2
+    host, port = val
+    assert isinstance(host, str)
+    assert isinstance(port, int)
+    return HostPort(host=host, port=port)

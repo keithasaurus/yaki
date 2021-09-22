@@ -2,7 +2,7 @@ from hypothesis import given, settings
 from tests.test_http.strategies import (
     asgi_http_request,
     asgi_http_scope,
-    http_response_named_tuple
+    http_response_named_tuple,
 )
 from tests.test_http.utils import call_http_endpoint, http_response_to_expected_parts
 from unittest import TestCase
@@ -25,19 +25,15 @@ class RespondTests(TestCase):
 
         asyncio.run(respond(response, sender))
 
-        self.assertEqual(result_list,
-                         http_response_to_expected_parts(response))
+        self.assertEqual(result_list, http_response_to_expected_parts(response))
 
 
 class HttpEndpointTests(TestCase):
-    @given(asgi_http_scope(),
-           asgi_http_request(),
-           http_response_named_tuple())
+    @given(asgi_http_scope(), asgi_http_request(), http_response_named_tuple())
     @settings(max_examples=30)
     def test_async_view(self, test_scope, test_request, test_response):
         async def test_view(request: HttpRequest) -> HttpResponse:
-            assert request == asgi_to_http_request(test_request["body"],
-                                                   test_scope)
+            assert request == asgi_to_http_request(test_request["body"], test_scope)
 
             await asyncio.sleep(0)
 
@@ -47,5 +43,4 @@ class HttpEndpointTests(TestCase):
 
         sent_items = call_http_endpoint(endpoint, [test_request])
 
-        self.assertEqual(sent_items,
-                         http_response_to_expected_parts(test_response))
+        self.assertEqual(sent_items, http_response_to_expected_parts(test_response))

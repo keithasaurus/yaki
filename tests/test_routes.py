@@ -7,20 +7,16 @@ import re
 class RegexMatchTest(TestCase):
     def test_returns_dict_of_parameterized_strings(self):
         result = regex_match_to_str_dict(
-            re.compile("a(?P<b>.+)c", ),
-            "a-stuff!-c"
+            re.compile(
+                "a(?P<b>.+)c",
+            ),
+            "a-stuff!-c",
         )
 
-        self.assertEqual(
-            result,
-            {'b': '-stuff!-'}
-        )
+        self.assertEqual(result, {"b": "-stuff!-"})
 
     def test_no_match_returns_none(self):
-        result = regex_match_to_str_dict(
-            re.compile("abc"),
-            ""
-        )
+        result = regex_match_to_str_dict(re.compile("abc"), "")
 
         self.assertIsNone(result)
 
@@ -38,9 +34,8 @@ class BracketRouteMatcherTests(TestCase):
 
         self.assertEqual(
             matcher("/some/keith/and/jackson/andMI1.chag---an"),
-            {"name": "keith",
-             "city": "jackson",
-             "_state_thing": "MI1.chag---an"})
+            {"name": "keith", "city": "jackson", "_state_thing": "MI1.chag---an"},
+        )
 
     def test_does_not_allow_duplicate_names(self):
         with self.assertRaises(AssertionError):

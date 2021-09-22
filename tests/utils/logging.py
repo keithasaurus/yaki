@@ -7,6 +7,7 @@ class SelfLogger(logging.Logger):
     """
     A logger for testing that appends its messages to a dict instance variable
     """
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.logged_messages: Dict[int, List[str]] = {}

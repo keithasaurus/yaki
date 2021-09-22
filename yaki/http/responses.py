@@ -6,50 +6,50 @@ from yaki.types import Headers
 def response_types_to_bytes(content: ResponseTypes) -> bytes:
     if isinstance(content, str):
         # for string we assume utf8
-        return bytes(content, encoding='utf8')
+        return bytes(content, encoding="utf8")
     elif isinstance(content, bytes):
         return content
     else:
-        raise TypeError(f'invalid type. Got {type(content)}')
+        raise TypeError(f"invalid type. Got {type(content)}")
 
 
 def default_headers_from_content(content: bytes) -> Headers:
     content_length = str(len(content))
     return [
-        (b'content-type', b'text/html; charset=utf-8'),
-        (b'content-length', content_length.encode('utf8'))
+        (b"content-type", b"text/html; charset=utf-8"),
+        (b"content-length", content_length.encode("utf8")),
     ]
 
 
-def _simple_response(content: ResponseTypes,
-                     status_code: int,
-                     headers: Optional[Headers]) -> HttpResponse:
+def _simple_response(
+    content: ResponseTypes, status_code: int, headers: Optional[Headers]
+) -> HttpResponse:
     content_bytes = response_types_to_bytes(content)
 
     return HttpResponse(
         body=content_bytes,
         status_code=status_code,
         headers=(
-            headers if headers is not None
-            else default_headers_from_content(response_types_to_bytes(content))))
+            headers
+            if headers
+            else default_headers_from_content(response_types_to_bytes(content))
+        ),
+    )
 
 
-def _status_response(status_code: int) -> Callable:
-    def inner(content: ResponseTypes,
-              headers: Optional[Headers]=None) -> HttpResponse:
-        return _simple_response(content,
-                                status_code,
-                                headers)
+def _status_response(
+    status_code: int,
+) -> Callable[[ResponseTypes, Headers], HttpResponse]:
+    def inner(content: ResponseTypes, headers: Headers) -> HttpResponse:
+        return _simple_response(content, status_code, headers)
 
     return inner
 
 
-def response(content: ResponseTypes,
-             status_code: int = 200,
-             headers: Optional[Headers] = None) -> HttpResponse:
-    return _simple_response(content,
-                            status_code,
-                            headers)
+def response(
+    content: ResponseTypes, status_code: int = 200, headers: Optional[Headers] = None
+) -> HttpResponse:
+    return _simple_response(content, status_code, headers)
 
 
 response_200 = _status_response(200)

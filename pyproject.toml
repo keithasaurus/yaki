@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "yaki"
+version = "0.1.0"
+description = "typesafe web framework"
+authors = ["Your Name <you@example.com>"]
+license = "gpl"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+mypy = "^0.910"
+hypothesis = "^6.21.6"
+Jinja2 = "^3.0.1"
+coverage = "^5.5"
+flake8 = "^3.9.2"
+black = "^21.9b0"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

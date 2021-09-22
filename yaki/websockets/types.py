@@ -8,11 +8,10 @@ from typing import (
     NamedTuple,
     Optional,
     Tuple,
-    Union
+    Union,
 )
-from yaki.routing.matchers import RouteMatcher
-from yaki.routing.types import MatcherOrStr
-from yaki.types import AsgiEvent, HostPort
+from yaki.routing.types import MatcherOrStr, RouteMatcher
+from yaki.types import AsgiEvent, HostPort, AsgiValue
 
 
 class WSConnect(NamedTuple):
@@ -61,7 +60,7 @@ WSIncomingEvent = Union[WSConnect, WSReceive, WSDisconnect, WSClose]
 class WSInbound(NamedTuple):
     custom: SimpleNamespace
     event: WSIncomingEvent
-    orig: Mapping
+    orig: Mapping[str, AsgiValue]
 
 
 WSOutbound = Union[WSAccept, WSSend, WSDisconnect, WSClose]

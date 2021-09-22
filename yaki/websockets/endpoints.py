@@ -8,7 +8,7 @@ from yaki.types import (
     list_hostport_to_datatype,
     Receiver,
     Scope,
-    Sender
+    Sender,
 )
 from yaki.websockets.types import (
     WSAccept,
@@ -21,12 +21,11 @@ from yaki.websockets.types import (
     WSReceive,
     WSScope,
     WSSend,
-    WSView
+    WSView,
 )
 
 
-def event_to_dict(event_type: str,
-                  event_details: Dict[str, AsgiValue]) -> AsgiEvent:
+def event_to_dict(event_type: str, event_details: Dict[str, AsgiValue]) -> AsgiEvent:
     event_details["type"] = f"websocket.{event_type}"
     return event_details
 
@@ -60,7 +59,7 @@ def ws_outgoing_to_event_dict(event: WSOutbound) -> AsgiEvent:
 
 def _event_to_receive(event: AsgiEvent) -> WSReceive:
     str_content = event.get("text")
-    content = str_content if str_content is not None else event['bytes']
+    content = str_content if str_content is not None else event["bytes"]
     assert isinstance(content, (str, bytes))
     return WSReceive(content)
 
@@ -82,27 +81,27 @@ def ws_incoming_to_datatype(event: AsgiEvent) -> WSInbound:
         "connect": lambda x: WSConnect(),
         "receive": _event_to_receive,
         "disconnect": _event_to_disconnect,
-        "close": _event_to_close
+        "close": _event_to_close,
     }
 
-    event_type = event['type']
+    event_type = event["type"]
     assert isinstance(event_type, str)
-    event_type = event_type.replace('websocket.', '')
+    event_type = event_type.replace("websocket.", "")
 
     return WSInbound(
         custom=SimpleNamespace(),
         event=convert_funcs[event_type](event),
-        orig=MappingProxyType(event)
+        orig=MappingProxyType(event),
     )
 
 
 def asgi_ws_scope_to_datatype(scope: AsgiEvent) -> WSScope:
-    path = scope['path']
-    query_string = scope.get('query_string', b"")
-    scheme = scope.get('scheme')
-    root_path = scope.get('root_path')
-    subprotocols = scope.get('subprotocols')
-    extensions = scope.get('extensions')
+    path = scope["path"]
+    query_string = scope.get("query_string", b"")
+    scheme = scope.get("scheme")
+    root_path = scope.get("root_path")
+    subprotocols = scope.get("subprotocols")
+    extensions = scope.get("extensions")
 
     assert isinstance(path, str)
     assert isinstance(query_string, bytes)
@@ -123,30 +122,27 @@ def asgi_ws_scope_to_datatype(scope: AsgiEvent) -> WSScope:
 
     return WSScope(
         client=list_hostport_to_datatype(scope.get("client")),
-        headers=list_headers_to_tuples(scope['headers']),
+        headers=list_headers_to_tuples(scope["headers"]),
         orig=scope,
         path=path,
         query_string=query_string,
         root_path=root_path,
         scheme=scheme,
         server=list_hostport_to_datatype(scope.get("client")),
-        subprotocols=subprotocols
+        subprotocols=subprotocols,
     )
 
 
 def ws_endpoint(func: WSView) -> Callable[[Scope], AsgiInstance]:
     def app(scope: Scope) -> AsgiInstance:
-        async def awaitable(receiver: Receiver,
-                            send: Sender) -> None:
+        async def awaitable(receiver: Receiver, send: Sender) -> None:
             async def wrapped_receiver() -> WSInbound:
                 return ws_incoming_to_datatype(await receiver())
 
             async def wrapped_send(event: WSOutbound) -> None:
                 await send(ws_outgoing_to_event_dict(event))
 
-            await func(asgi_ws_scope_to_datatype(scope),
-                       wrapped_receiver,
-                       wrapped_send)
+            await func(asgi_ws_scope_to_datatype(scope), wrapped_receiver, wrapped_send)
 
         return awaitable
 

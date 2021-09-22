@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 
+set -e
+
 TIME_START=`date +%s`
 
 echo "Running mypy type checks"
-mypy --strict yaki || exit $?
-mypy --ignore-missing-imports tests examples || exit $?
+mypy --strict yaki
+mypy --ignore-missing-imports tests examples
 
 echo "Running tests with coverage"
-coverage run -m unittest discover tests || exit $?
+coverage run -m unittest discover tests
 
 COVERAGE_THRESHOLD=94
 coverage report --fail-under "$COVERAGE_THRESHOLD" > /dev/null 2>&1
@@ -28,7 +30,7 @@ coverage erase
 
 
 echo "Running Flake8"
-flake8 . || exit $?
+flake8 .
 
 
 TIME_END=`date +%s`

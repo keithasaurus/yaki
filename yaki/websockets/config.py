@@ -8,4 +8,7 @@ def ws_app(routes: Iterable[WSProtoRoute]) -> WSApp:
         tuple(
             (bracket_route_matcher(matcher), view)
             if isinstance(matcher, str)
-            else (matcher, view) for matcher, view in routes))
+            else (matcher, view)
+            for matcher, view in routes
+        )
+    )

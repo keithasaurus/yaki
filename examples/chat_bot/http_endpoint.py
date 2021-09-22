@@ -9,6 +9,7 @@ async def serve_html_page(request: HttpRequest) -> HttpResponse:
         template = Template(f.read())
 
     return response(
-        template.render({
-            "ws_url": f"ws://{request.server.host}:{request.server.port}/chat"
-        }))
+        template.render(
+            {"ws_url": f"ws://{request.server.host}:{request.server.port}/chat"}
+        )
+    )

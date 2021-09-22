@@ -7,10 +7,11 @@ import random
 def query_string(draw):
     strs = []
     for _ in range(random.randint(0, 10)):
-        key = draw(st.text(min_size=1,
-                           max_size=20)
-                   .map(lambda x: x.strip())
-                   .filter(lambda x: len(x) > 0))
+        key = draw(
+            st.text(min_size=1, max_size=20)
+            .map(lambda x: x.strip())
+            .filter(lambda x: len(x) > 0)
+        )
         val = draw(st.text(max_size=40))
         strs.append(f"{key}={val}")
 
@@ -20,32 +21,27 @@ def query_string(draw):
 
 @st.composite
 def header_string(draw):
-    return draw(
-        st.text(max_size=100).map(lambda x: bytes(x.lower(), encoding="utf8"))
-    )
+    return draw(st.text(max_size=100).map(lambda x: bytes(x.lower(), encoding="utf8")))
 
 
 @st.composite
 def headers(draw):
-    return draw(st.lists(
+    return draw(
         st.lists(
-            header_string(),
-            min_size=2,
-            max_size=2),
-        min_size=0,
-        max_size=8))
+            st.lists(header_string(), min_size=2, max_size=2), min_size=0, max_size=8
+        )
+    )
 
 
 @st.composite
 def host_and_port(draw):
-    return [draw(st.text(min_size=1, max_size=20)),
-            draw(st.integers(1, 10000))]
+    return [draw(st.text(min_size=1, max_size=20)), draw(st.integers(1, 10000))]
 
 
 @st.composite
 def scope_extensions(draw):
-    return draw(st.dictionaries(st.text(),
-                                st.dictionaries(st.text(),
-                                                st.text(),
-                                                max_size=3),
-                                max_size=3))
+    return draw(
+        st.dictionaries(
+            st.text(), st.dictionaries(st.text(), st.text(), max_size=3), max_size=3
+        )
+    )
