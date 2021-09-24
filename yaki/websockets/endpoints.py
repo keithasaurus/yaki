@@ -1,5 +1,6 @@
 from types import MappingProxyType, SimpleNamespace
-from typing import Callable, Dict
+from typing import Callable
+
 from yaki.types import (
     AsgiEvent,
     AsgiInstance,
@@ -13,7 +14,7 @@ from yaki.types import (
 from yaki.websockets.types import (
     WSAccept,
     WSClose,
-    WSConnect,
+    ws_connect,
     WSDisconnect,
     WSInbound,
     WSIncomingEvent,
@@ -25,7 +26,7 @@ from yaki.websockets.types import (
 )
 
 
-def event_to_dict(event_type: str, event_details: Dict[str, AsgiValue]) -> AsgiEvent:
+def event_to_dict(event_type: str, event_details: dict[str, AsgiValue]) -> AsgiEvent:
     event_details["type"] = f"websocket.{event_type}"
     return event_details
 
@@ -77,8 +78,8 @@ def _event_to_close(event: AsgiEvent) -> WSClose:
 
 
 def ws_incoming_to_datatype(event: AsgiEvent) -> WSInbound:
-    convert_funcs: Dict[str, Callable[[AsgiEvent], WSIncomingEvent]] = {
-        "connect": lambda x: WSConnect(),
+    convert_funcs: dict[str, Callable[[AsgiEvent], WSIncomingEvent]] = {
+        "connect": lambda x: ws_connect,
         "receive": _event_to_receive,
         "disconnect": _event_to_disconnect,
         "close": _event_to_close,

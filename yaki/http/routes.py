@@ -1,5 +1,6 @@
 from functools import partial
-from typing import Dict, Iterable, Tuple
+from typing import Iterable
+
 from yaki.http.endpoints import http_endpoint
 from yaki.http.middleware import combine_middleware
 from yaki.http.types import (
@@ -18,7 +19,7 @@ from yaki.types import Scope, AsgiInstance
 
 
 def method_view_to_view_func(
-    method: str, parsed_params: Dict[str, str], method_view: HttpMethodView
+    method: str, parsed_params: dict[str, str], method_view: HttpMethodView
 ) -> HttpRequestResponseView:
     if isinstance(method_view, dict):
         view_func = method_view.get(method.upper())
@@ -36,7 +37,7 @@ def method_view_to_view_func(
     return ret_view_func
 
 
-def route_http(config: HttpApp, scope: Scope) -> Tuple[bool, AsgiInstance]:
+def route_http(config: HttpApp, scope: Scope) -> tuple[bool, AsgiInstance]:
     path = scope["path"]
     assert isinstance(path, str)
 
@@ -88,7 +89,7 @@ def two_tuple_proto_to_route(proto_route: HttpProtoRouteTwoTuple) -> HttpRoute:
     return new_matcher, new_view
 
 
-def normalize_routes(proto_routes: Iterable[HttpProtoRoute]) -> Tuple[HttpRoute, ...]:
+def normalize_routes(proto_routes: Iterable[HttpProtoRoute]) -> tuple[HttpRoute, ...]:
     routes = []
     for proto_route in proto_routes:
         # note that mypy isn't able to determine that we're essentially

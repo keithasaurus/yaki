@@ -1,8 +1,8 @@
-from re import Pattern
-from typing import Dict, List, Optional
-from yaki.routing.types import RouteMatcher
-
 import re
+from re import Pattern
+from typing import Optional
+
+from yaki.routing.types import RouteMatcher
 
 BRACKET_REGEX_STR = "{[^ {]*}"
 
@@ -12,7 +12,7 @@ BRACKET_REGEX_BROAD = re.compile(BRACKET_REGEX_STR)
 
 def regex_match_to_str_dict(
     pattern: Pattern[str], url: str
-) -> Optional[Dict[str, str]]:
+) -> Optional[dict[str, str]]:
     match = re.match(pattern, url)
 
     if match is None:
@@ -25,7 +25,7 @@ def regex_route_matcher(pattern: Pattern[str]) -> RouteMatcher:
     if isinstance(pattern, str):
         pattern = re.compile(pattern)
 
-    def inner(url: str) -> Optional[Dict[str, str]]:
+    def inner(url: str) -> Optional[dict[str, str]]:
         return regex_match_to_str_dict(pattern, url)
 
     return inner
@@ -35,7 +35,7 @@ def to_capturing_bracket_param(arg_name: str) -> str:
     return f"(?P<{arg_name}>.+)"
 
 
-def assert_valid_params(param_names: List[str]) -> None:
+def assert_valid_params(param_names: list[str]) -> None:
     for name in param_names:
         assert name[
             1:-1

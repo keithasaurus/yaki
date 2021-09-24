@@ -2,17 +2,14 @@ from typing import (
     Any,
     Awaitable,
     Callable,
-    Dict,
-    List,
     Mapping,
     NamedTuple,
-    Tuple,
     Union,
 )
 
 # Note the Anys here should be recursive AsgiValue, but are not because
 # of mypy's current limitations
-AsgiValue = Union[bytes, str, int, float, List[Any], Dict[str, Any], bool, None]
+AsgiValue = Union[bytes, str, int, float, list[Any], dict[str, Any], bool, None]
 
 AsgiEvent = Mapping[str, AsgiValue]
 
@@ -34,7 +31,7 @@ class HostPort(NamedTuple):
     port: int
 
 
-Headers = List[Tuple[bytes, bytes]]
+Headers = list[tuple[bytes, bytes]]
 
 
 def list_headers_to_tuples(val: AsgiValue) -> Headers:

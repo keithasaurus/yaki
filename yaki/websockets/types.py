@@ -3,61 +3,66 @@ from types import SimpleNamespace
 from typing import (
     Awaitable,
     Callable,
-    List,
     Mapping,
-    NamedTuple,
     Optional,
     Tuple,
     Union,
 )
+
 from yaki.routing.types import MatcherOrStr, RouteMatcher
 from yaki.types import AsgiEvent, HostPort, AsgiValue
 
 
-class WSConnect(NamedTuple):
+class _WSConnectType:
     pass
 
 
-@dataclass
+ws_connect = _WSConnectType()
+
+
+@dataclass(frozen=True)
 class WSAccept:
     subprotocol: Optional[str]
 
 
-@dataclass
+@dataclass(frozen=True)
 class WSSend:
     content: Union[str, bytes]
 
 
-@dataclass
+@dataclass(frozen=True)
 class WSClose:
     code: int
 
 
-@dataclass
+@dataclass(frozen=True)
 class WSDisconnect:
     code: int
 
 
-class WSReceive(NamedTuple):
+@dataclass(frozen=True)
+class WSReceive:
     content: Union[str, bytes]
 
 
-class WSScope(NamedTuple):
+@dataclass(frozen=True)
+class WSScope:
     path: str
     query_string: bytes
-    headers: List[Tuple[bytes, bytes]]
+    headers: list[tuple[bytes, bytes]]
     scheme: Optional[str]
     root_path: Optional[str]
     client: Optional[HostPort]
     server: Optional[HostPort]
-    subprotocols: Optional[List[str]]
+    subprotocols: Optional[list[str]]
     orig: AsgiEvent
 
 
-WSIncomingEvent = Union[WSConnect, WSReceive, WSDisconnect, WSClose]
+WSIncomingEvent = Union[_WSConnectType, WSReceive, WSDisconnect, WSClose]
 
 
-class WSInbound(NamedTuple):
+@dataclass(frozen=True)
+class WSInbound:
     custom: SimpleNamespace
     event: WSIncomingEvent
     orig: Mapping[str, AsgiValue]
@@ -65,19 +70,14 @@ class WSInbound(NamedTuple):
 
 WSOutbound = Union[WSAccept, WSSend, WSDisconnect, WSClose]
 
-
 WSReceiver = Callable[[], Awaitable[WSInbound]]
 
 WSSender = Callable[[WSOutbound], Awaitable[None]]
 
-
 WSView = Callable[[WSScope, WSReceiver, WSSender], Awaitable[None]]
 
+WSProtoRoute = tuple[MatcherOrStr, WSView]
 
-WSProtoRoute = Tuple[MatcherOrStr, WSView]
+WSRoute = tuple[RouteMatcher, WSView]
 
-WSRoute = Tuple[RouteMatcher, WSView]
-
-
-class WSApp(NamedTuple):
-    routes: Tuple[WSRoute, ...]
+WSApp = Tuple[WSRoute, ...]

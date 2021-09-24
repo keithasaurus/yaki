@@ -53,7 +53,6 @@ class WSEndpointTests(TestCase):
             # wait for all incoming events
             for asgi_event in incoming_events:
                 received_event = await receive()
-
                 assert received_event == ws_incoming_to_datatype(asgi_event)
 
             # send all outgoing events

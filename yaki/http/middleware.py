@@ -1,6 +1,7 @@
 from functools import partial
 from logging import Logger
-from typing import Callable, Tuple
+from typing import Callable
+
 from yaki.http.types import (
     HttpMiddlewareFunc,
     HttpRequest,
@@ -46,7 +47,7 @@ exception_500_middleware_default_response = partial(
 
 
 def combine_middleware(
-    middleware: Tuple[HttpMiddlewareFunc, ...], view_func: HttpRequestResponseView
+    middleware: tuple[HttpMiddlewareFunc, ...], view_func: HttpRequestResponseView
 ) -> HttpRequestResponseView:
     middleware_and_view_func = view_func
     # Note that the list of the middleware is reversed for it to apply in order

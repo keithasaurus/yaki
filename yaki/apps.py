@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from functools import partial
-from typing import Callable, Tuple, Union
+from typing import Callable, Union
+
 from yaki.http.routes import route_http
 from yaki.http.types import HttpApp
 from yaki.types import AsgiInstance, Scope
@@ -12,11 +13,11 @@ AppConfig = Union[HttpApp, WSApp]
 
 @dataclass
 class Apps:
-    http: Tuple[Callable[[Scope], Tuple[bool, AsgiInstance]], ...]
-    websocket: Tuple[Callable[[Scope], Tuple[bool, AsgiInstance]], ...]
+    http: tuple[Callable[[Scope], tuple[bool, AsgiInstance]], ...]
+    websocket: tuple[Callable[[Scope], tuple[bool, AsgiInstance]], ...]
 
 
-def _app_configs_to_routers_dict(apps: Tuple[AppConfig, ...]) -> Apps:
+def _app_configs_to_routers_dict(apps: tuple[AppConfig, ...]) -> Apps:
     http_apps = []
     websocket_apps = []
 
@@ -31,7 +32,7 @@ def _app_configs_to_routers_dict(apps: Tuple[AppConfig, ...]) -> Apps:
         http_apps = [HttpApp(routes=tuple(), middleware=tuple())]
 
     if len(websocket_apps) == 0:
-        websocket_apps = [WSApp(routes=tuple())]
+        websocket_apps = [tuple()]
 
     return Apps(
         http=tuple(partial(route_http, conf) for conf in http_apps),

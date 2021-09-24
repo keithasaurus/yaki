@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from yaki.websockets.types import (
     WSAccept,
     WSClose,
-    WSConnect,
+    ws_connect,
     WSDisconnect,
     WSInbound,
     WSOutbound,
@@ -51,7 +51,7 @@ async def ws_chat_bot(scope: WSScope, receive: WSReceiver, send: WSSender) -> No
 
     connect = await receive()
 
-    assert isinstance(connect.event, WSConnect)
+    assert connect.event is ws_connect
 
     await protected_send(WSAccept(subprotocol=None))
 
@@ -86,7 +86,7 @@ async def ws_chat_bot(scope: WSScope, receive: WSReceiver, send: WSSender) -> No
 
             await protected_send(WSSend(resp))
 
-        elif isinstance(message.event, WSConnect):
+        elif message.event is ws_connect:
             # already received a connect request
             state.disconnected = True
             await protected_send(WSClose(1000))

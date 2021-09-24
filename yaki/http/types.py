@@ -1,18 +1,16 @@
 from dataclasses import dataclass
-from mypy_extensions import Arg
 from types import SimpleNamespace
 from typing import (
     Any,
     Awaitable,
     Callable,
-    Dict,
-    List,
     NamedTuple,
     Optional,
-    Set,
-    Tuple,
     Union,
 )
+
+from mypy_extensions import Arg
+
 from yaki.routing.types import MatcherOrStr, RouteMatcher
 from yaki.types import Headers, HostPort, Scope
 
@@ -21,12 +19,12 @@ class HttpRequest(NamedTuple):
     body: bytes
     client: Optional[HostPort]
     custom: SimpleNamespace
-    extensions: Optional[Dict[str, Dict[Any, Any]]]
-    headers: List[Tuple[bytes, bytes]]
+    extensions: Optional[dict[str, dict[Any, Any]]]
+    headers: list[tuple[bytes, bytes]]
     http_version: str
     method: str
     path: str
-    query_params: Dict[str, List[str]]
+    query_params: dict[str, list[str]]
     root_path: str
     scheme: str
     scope_orig: Scope
@@ -63,12 +61,12 @@ HttpView = Union[
 
 # if the route is just a view it accepts all methods.
 # If it's a dict, it's the specified method(s)
-HttpMethodView = Union[HttpView, Dict[str, HttpView]]
+HttpMethodView = Union[HttpView, dict[str, HttpView]]
 
-HttpRoute = Tuple[RouteMatcher, HttpMethodView]
+HttpRoute = tuple[RouteMatcher, HttpMethodView]
 
-HttpProtoRouteThreeTuple = Tuple[MatcherOrStr, Set[str], HttpView]
-HttpProtoRouteTwoTuple = Tuple[MatcherOrStr, HttpMethodView]
+HttpProtoRouteThreeTuple = tuple[MatcherOrStr, set[str], HttpView]
+HttpProtoRouteTwoTuple = tuple[MatcherOrStr, HttpMethodView]
 
 HttpProtoRoute = Union[HttpProtoRouteTwoTuple, HttpProtoRouteThreeTuple]
 
@@ -79,5 +77,5 @@ HttpMiddlewareFunc = Callable[
 
 
 class HttpApp(NamedTuple):
-    routes: Tuple[HttpRoute, ...]
-    middleware: Tuple[HttpMiddlewareFunc, ...]
+    routes: tuple[HttpRoute, ...]
+    middleware: tuple[HttpMiddlewareFunc, ...]

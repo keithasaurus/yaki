@@ -1,5 +1,5 @@
-from typing import Callable, Dict, Optional, Union
+from typing import Callable, Optional, Union
 
-RouteMatcher = Callable[[str], Optional[Dict[str, str]]]
+RouteMatcher = Callable[[str], Optional[dict[str, str]]]
 
 MatcherOrStr = Union[str, RouteMatcher]
