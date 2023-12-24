@@ -112,7 +112,7 @@ async def wait_for_request(
 
 
 def http_endpoint_base(
-    func: Callable[[Scope, Receiver, Sender], Awaitable[None]]
+    func: Callable[[Scope, Receiver, Sender], Awaitable[None]],
 ) -> Callable[[Scope], AsgiInstance]:
     def app(scope: Scope) -> AsgiInstance:
         async def awaitable(receive: Receiver, send: Sender) -> None:

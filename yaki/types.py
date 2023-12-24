@@ -7,9 +7,12 @@ from typing import (
     Union,
 )
 
+_ASGI_SCALAR = Union[bytes, str, int, float, bool, None]
+_ASGI_2 = Union[_ASGI_SCALAR, list[Any], Mapping[str, Any]]
+_ASGI_1 = Union[_ASGI_SCALAR, list[_ASGI_2], Mapping[str, _ASGI_2]]
 # Note the Anys here should be recursive AsgiValue, but are not because
 # of mypy's current limitations
-AsgiValue = Union[bytes, str, int, float, list[Any], dict[str, Any], bool, None]
+AsgiValue = Union[_ASGI_SCALAR, list[_ASGI_1], Mapping[str, _ASGI_1]]
 
 AsgiEvent = Mapping[str, AsgiValue]
 

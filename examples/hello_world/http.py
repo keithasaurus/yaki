@@ -8,7 +8,12 @@ async def view(request: HttpRequest) -> HttpResponse:
     return response_200("Hello, world!", [])
 
 
-app = yaki(http_app(routes=[("/", view)], middleware=[]))
+app = yaki(
+    http_app(
+        routes=[("/", view)],
+        middleware=[]
+    )
+)
 
 
 if __name__ == "__main__":

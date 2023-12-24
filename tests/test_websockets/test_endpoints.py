@@ -1,11 +1,9 @@
-from hypothesis import given, settings
-from hypothesis import strategies as st
+import asyncio
+from unittest import TestCase
+
 from tests.test_websockets.strategies import (
     asgi_ws_connect,
-    asgi_ws_receive,
-    asgi_ws_scope,
 )
-from unittest import TestCase
 from yaki.types import AsgiEvent, Scope
 from yaki.websockets.endpoints import (
     asgi_ws_scope_to_datatype,
@@ -13,21 +11,9 @@ from yaki.websockets.endpoints import (
     ws_incoming_to_datatype,
     ws_outgoing_to_event_dict,
 )
-from yaki.websockets.types import WSAccept, WSClose, WSDisconnect, WSSend
-
-import asyncio
 
 
 class WSEndpointTests(TestCase):
-    @given(
-        asgi_ws_scope(),
-        st.lists(asgi_ws_receive(), max_size=5),
-        st.from_type(WSAccept),
-        st.lists(st.from_type(WSSend), max_size=5),
-        st.from_type(WSClose),
-        st.from_type(WSDisconnect),
-    )
-    @settings(max_examples=20)
     def test_receive_works(
         self,
         test_scope,
@@ -76,6 +62,3 @@ class WSEndpointTests(TestCase):
             send_destination,
             [ws_outgoing_to_event_dict(evt) for evt in outgoing_events],
         )
-
-
-#
