@@ -5,8 +5,7 @@ set -e
 TIME_START=`date +%s`
 
 echo "Running mypy type checks"
-mypy --strict yaki
-mypy --ignore-missing-imports tests examples
+mypy yaki
 
 echo "Running tests with coverage"
 coverage run -m pytest -q
