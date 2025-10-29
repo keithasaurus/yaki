@@ -29,8 +29,8 @@ fi
 coverage erase
 
 
-echo "Running Flake8"
-flake8 .
+echo "Running ruff"
+ruff check .
 
 
 TIME_END=`date +%s`
