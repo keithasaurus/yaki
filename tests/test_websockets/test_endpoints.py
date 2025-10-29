@@ -1,9 +1,6 @@
 import asyncio
 from unittest import TestCase
 
-from tests.test_websockets.strategies import (
-    asgi_ws_connect,
-)
 from yaki.types import AsgiEvent, Scope
 from yaki.websockets.endpoints import (
     asgi_ws_scope_to_datatype,
@@ -12,6 +9,10 @@ from yaki.websockets.endpoints import (
     ws_outgoing_to_event_dict,
 )
 from yaki.websockets.types import WSAccept, WSSend, WSClose, WSDisconnect
+
+
+def asgi_ws_connect():
+    return {"type": "websocket.connect"}
 
 
 class WSEndpointTests(TestCase):

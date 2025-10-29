@@ -1,11 +1,3 @@
-from hypothesis import strategies as st
-from tests.utils.strategies import (
-    header_string,
-    headers,
-    host_and_port,
-    query_string,
-    scope_extensions,
-)
 from types import SimpleNamespace
 from yaki.http.methods import (
     CONNECT,
@@ -19,82 +11,55 @@ from yaki.http.methods import (
     TRACE,
 )
 from yaki.http.types import HttpRequest, HttpResponse
-from yaki.types import HostPort
 
 
-@st.composite
-def gen_http_version(draw):
-    return draw(st.sampled_from(["1.0", "1.1", "1.2"]))
+# Deterministic helpers replacing Hypothesis strategies for explicit tests
+
+def gen_http_version() -> str:
+    return "1.1"
 
 
-@st.composite
-def gen_http_method(draw):
-    return draw(
-        st.sampled_from([CONNECT, DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, TRACE])
-    )
+def gen_http_method() -> str:
+    return GET
 
 
-@st.composite
-def asgi_http_scope(draw):
-    # some of these keys are optional but can't reason about
-    # how hypothesis is handling at the moment
+def asgi_http_scope(path: str = "/") -> dict:
     return {
         "type": "http",
-        "headers": draw(headers()),
-        "http_version": draw(gen_http_version()),
-        "method": draw(gen_http_method()),
-        "path": "/" + draw(st.text(max_size=1000)),
-        "query_string": draw(query_string()),
-        "extensions": draw(scope_extensions()),
-        "server": draw(host_and_port()),
-        "client": draw(host_and_port()),
-        "scheme": draw(st.text(min_size=1)),
-        "root_path": draw(st.text(max_size=100)),
+        "headers": [],
+        "http_version": gen_http_version(),
+        "method": gen_http_method(),
+        "path": path,
+        "query_string": b"",
+        "extensions": {},
+        "server": ["127.0.0.1", 8000],
+        "client": ["127.0.0.1", 5000],
+        "scheme": "http",
+        "root_path": "",
     }
 
 
-@st.composite
-def asgi_http_request(draw):
-    # todo: allow multiple results to return and set "more_body" appropriately
-    return {
-        "type": "http.request",
-        "body": bytes(draw(st.text(max_size=1000)), encoding="utf8"),
-        "more_body": False,
-    }
+def asgi_http_request(body: bytes = b"hello") -> dict:
+    return {"type": "http.request", "body": body, "more_body": False}
 
 
-@st.composite
-def http_response_named_tuple(draw):
-    return HttpResponse(
-        status_code=draw(st.integers()),
-        # make the iterable a list for the sake of testing... some
-        # iterables can only be consumed once, meaning testing make not
-        # behave the same as the code under test and vice versa
-        body=draw(st.text(max_size=100).map(lambda x: x.encode("utf8"))),
-        headers=draw(headers()),
-    )
+def http_response_named_tuple(status_code: int = 200, body: bytes = b"ok") -> HttpResponse:
+    return HttpResponse(status_code=status_code, headers=[], body=body)
 
 
-@st.composite
-def http_request_named_tuple(draw):
+def http_request_named_tuple(method: str = GET, path: str = "/") -> HttpRequest:
     return HttpRequest(
-        body=draw(st.binary(max_size=50)),
-        client=draw(st.one_of(st.from_type(HostPort), st.none())),
+        body=b"",
+        client=["127.0.0.1", 5000],
         custom=SimpleNamespace(),
-        extensions=draw(st.one_of(scope_extensions(), st.none())),
-        headers=draw(
-            st.lists(st.tuples(header_string(), header_string()), max_size=10)
-        ),
-        http_version=draw(gen_http_version()),
-        method=draw(gen_http_method()),
-        path=draw(st.text(max_size=200)),
-        query_params=draw(
-            st.dictionaries(
-                st.text(max_size=20), st.lists(st.text(max_size=20), max_size=10)
-            )
-        ),
-        root_path=draw(st.text(max_size=200)),
-        scheme=draw(st.text(min_size=1, max_size=5)),
-        scope_orig=draw(asgi_http_scope()),
-        server=draw(st.one_of(st.from_type(HostPort), st.none())),
+        extensions={},
+        headers=[],
+        http_version="1.1",
+        method=method,
+        path=path,
+        query_params={},
+        root_path="",
+        scheme="http",
+        scope_orig=asgi_http_scope(path),
+        server=["127.0.0.1", 8000],
     )

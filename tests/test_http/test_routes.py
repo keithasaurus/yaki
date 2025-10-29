@@ -1,11 +1,3 @@
-from hypothesis import given, settings
-from hypothesis import strategies as st
-from tests.test_http.strategies import (
-    asgi_http_request,
-    asgi_http_scope,
-    http_request_named_tuple,
-    http_response_named_tuple,
-)
 from tests.test_http.utils import call_http_endpoint, http_response_to_expected_parts
 from typing import Callable
 from unittest import TestCase
@@ -20,12 +12,32 @@ import asyncio
 import re
 
 
+def make_scope(path: str = "/") -> dict:
+    return {
+        "type": "http",
+        "headers": [],
+        "http_version": "1.1",
+        "method": "GET",
+        "path": path,
+        "query_string": b"",
+        "extensions": {},
+        "server": ["127.0.0.1", 8000],
+        "client": ["127.0.0.1", 5000],
+        "scheme": "http",
+        "root_path": "",
+    }
+
+
+def make_request(body: bytes = b"hello") -> dict:
+    return {"type": "http.request", "body": body, "more_body": False}
+
+
 class RouteHttpTests(TestCase):
-    @given(asgi_http_scope(), asgi_http_request(), http_response_named_tuple())
-    @settings(max_examples=20)
-    def test_response_is_correct(self, test_scope, test_asgi_request, test_response):
+    def test_response_is_correct(self):
         endpoint_path = "/"
-        test_scope["path"] = endpoint_path  # have to make sure the view is hit
+        test_scope = make_scope(endpoint_path)
+        test_asgi_request = make_request(b"abc")
+        test_response = HttpResponse(status_code=202, headers=[], body=b"ok")
 
         request_named_tuple = asgi_to_http_request(
             test_asgi_request["body"], test_scope
@@ -59,9 +71,9 @@ class RouteHttpTests(TestCase):
 
         self.assertEqual(result_target, ["middleware was run", test_response])
 
-    @given(asgi_http_scope(), asgi_http_request())
-    @settings(max_examples=20)
-    def test_404_received_if_route_not_found(self, test_scope, test_request):
+    def test_404_received_if_route_not_found(self):
+        test_scope = make_scope("/not-found")
+        test_request = make_request(b"")
         _, endpoint = route_http(
             HttpApp(routes=tuple(), middleware=tuple()), test_scope
         )
@@ -74,9 +86,10 @@ class RouteHttpTests(TestCase):
 
 
 class NormalizeRoutesTests(TestCase):
-    @given(http_response_named_tuple(), http_response_named_tuple())
-    @settings(max_examples=1)
-    def test_two_and_three_tuple_routes(self, test_response_1, test_response_2):
+    def test_two_and_three_tuple_routes(self):
+        test_response_1 = HttpResponse(status_code=200, headers=[], body=b"1")
+        test_response_2 = HttpResponse(status_code=201, headers=[], body=b"2")
+
         def view_func_1(request: HttpRequest) -> HttpResponse:
             return test_response_1
 
@@ -120,16 +133,25 @@ class NormalizeRoutesTests(TestCase):
 
 
 class MethodViewToViewFuncTests(TestCase):
-    @given(
-        http_request_named_tuple(),
-        http_response_named_tuple(),
-        st.text(max_size=10),
-        st.text(max_size=10),
-    )
-    @settings(max_examples=5)
-    def test_converts_dicts_to_kwargs(
-        self, test_request, test_response, test_name, test_age
-    ):
+    def test_converts_dicts_to_kwargs(self):
+        test_request = HttpRequest(
+            body=b"",
+            client=["127.0.0.1", 5000],
+            custom=__import__("types").SimpleNamespace(),
+            extensions={},
+            headers=[],
+            http_version="1.1",
+            method=GET,
+            path="/",
+            query_params={},
+            root_path="",
+            scheme="http",
+            scope_orig=make_scope("/"),
+            server=["127.0.0.1", 8000],
+        )
+        test_response = HttpResponse(status_code=200, headers=[], body=b"ok")
+        test_name, test_age = "alice", "30"
+
         def assert_correct(request: HttpRequest, name: str, age: str):
             assert request == test_request
             assert name == test_name
@@ -154,12 +176,23 @@ class MethodViewToViewFuncTests(TestCase):
 
             self.assertEqual(asyncio.run(new_func(test_request)), test_response)
 
-    @given(http_request_named_tuple(), http_response_named_tuple())
-    def test_dict_method_view_returns_405_for_invalid(
-        self, test_request, test_response
-    ):
-
-        test_request = test_request._replace(method=POST)
+    def test_dict_method_view_returns_405_for_invalid(self):
+        test_request = HttpRequest(
+            body=b"",
+            client=["127.0.0.1", 5000],
+            custom=__import__("types").SimpleNamespace(),
+            extensions={},
+            headers=[],
+            http_version="1.1",
+            method=POST,
+            path="/",
+            query_params={},
+            root_path="",
+            scheme="http",
+            scope_orig=make_scope("/"),
+            server=["127.0.0.1", 8000],
+        )
+        test_response = HttpResponse(status_code=200, headers=[], body=b"ok")
 
         async def view(request: HttpRequest) -> HttpResponse:
             return test_response

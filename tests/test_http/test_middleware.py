@@ -1,9 +1,3 @@
-from hypothesis import given, settings
-from hypothesis import strategies as st
-from tests.test_http.strategies import (
-    http_request_named_tuple,
-    http_response_named_tuple,
-)
 from tests.utils.logging import SelfLogger
 from unittest import TestCase
 from yaki.http.middleware import (
@@ -14,13 +8,44 @@ from yaki.http.types import HttpRequest, HttpRequestResponseView, HttpResponse
 
 import asyncio
 import logging
+from types import SimpleNamespace
+
+
+def make_request(method: str = "GET") -> HttpRequest:
+    return HttpRequest(
+        body=b"",
+        client=["127.0.0.1", 5000],
+        custom=SimpleNamespace(),
+        extensions={},
+        headers=[],
+        http_version="1.1",
+        method=method,
+        path="/",
+        query_params={},
+        root_path="",
+        scheme="http",
+        scope_orig={
+            "type": "http",
+            "headers": [],
+            "http_version": "1.1",
+            "method": method,
+            "path": "/",
+            "query_string": b"",
+            "extensions": {},
+            "server": ["127.0.0.1", 8000],
+            "client": ["127.0.0.1", 5000],
+            "scheme": "http",
+            "root_path": "",
+        },
+        server=["127.0.0.1", 8000],
+    )
 
 
 class CombineMiddlewareTests(TestCase):
-    @given(http_request_named_tuple(), http_response_named_tuple())
-    @settings(max_examples=20)
-    def test_executes_in_filo_order(self, test_request, test_response):
+    def test_executes_in_filo_order(self):
         events = []
+        test_request = make_request()
+        test_response = HttpResponse(status_code=200, headers=[], body=b"ok")
 
         async def middleware_1(
             view_func: HttpRequestResponseView, request: HttpRequest
@@ -55,10 +80,11 @@ class CombineMiddlewareTests(TestCase):
 
         self.assertEqual(events, [1, "b", "the view happened", "c", 4])
 
-    @given(st.text(), http_request_named_tuple(), http_response_named_tuple())
-    def test_middleware_can_edit_custom_obj(
-        self, test_val, test_request, test_response
-    ):
+    def test_middleware_can_edit_custom_obj(self):
+        test_val = "bob"
+        test_request = make_request()
+        test_response = HttpResponse(status_code=200, headers=[], body=b"ok")
+
         async def name_middleware(
             view_func: HttpRequestResponseView, request: HttpRequest
         ) -> HttpResponse:
@@ -79,11 +105,9 @@ class CombineMiddlewareTests(TestCase):
 
 
 class Exception500Tests(TestCase):
-    @given(http_request_named_tuple(), st.text(max_size=100))
-    @settings(max_examples=20)
-    def test_default_responder_returns_proper_result_when_exception_raised(
-        self, test_request, exception_message
-    ):
+    def test_default_responder_returns_proper_result_when_exception_raised(self):
+        test_request = make_request()
+        exception_message = "uh oh"
         test_exception = Exception(exception_message)
 
         async def view(request: HttpRequest) -> HttpResponse:

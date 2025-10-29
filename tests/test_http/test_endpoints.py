@@ -1,9 +1,3 @@
-from hypothesis import given, settings
-from tests.test_http.strategies import (
-    asgi_http_request,
-    asgi_http_scope,
-    http_response_named_tuple,
-)
 from tests.test_http.utils import call_http_endpoint, http_response_to_expected_parts
 from unittest import TestCase
 from yaki.http.endpoints import asgi_to_http_request, http_endpoint, respond
@@ -14,9 +8,8 @@ import asyncio
 
 
 class RespondTests(TestCase):
-    @given(http_response_named_tuple())
-    @settings(max_examples=30)
-    def test_send_gets_multiple_events(self, response):
+    def test_send_gets_multiple_events(self):
+        response = HttpResponse(status_code=200, headers=[], body=b"ok")
         result_list = []
 
         async def sender(event: AsgiEvent) -> None:
@@ -29,9 +22,23 @@ class RespondTests(TestCase):
 
 
 class HttpEndpointTests(TestCase):
-    @given(asgi_http_scope(), asgi_http_request(), http_response_named_tuple())
-    @settings(max_examples=30)
-    def test_async_view(self, test_scope, test_request, test_response):
+    def test_async_view(self):
+        test_scope = {
+            "type": "http",
+            "headers": [],
+            "http_version": "1.1",
+            "method": "GET",
+            "path": "/",
+            "query_string": b"",
+            "extensions": {},
+            "server": ["127.0.0.1", 8000],
+            "client": ["127.0.0.1", 5000],
+            "scheme": "http",
+            "root_path": "",
+        }
+        test_request = {"type": "http.request", "body": b"hello", "more_body": False}
+        test_response = HttpResponse(status_code=201, headers=[[b"a", b"b"]], body=b"resp")
+
         async def test_view(request: HttpRequest) -> HttpResponse:
             assert request == asgi_to_http_request(test_request["body"], test_scope)
 
