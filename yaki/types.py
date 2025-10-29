@@ -66,3 +66,12 @@ def list_hostport_to_datatype(val: AsgiValue) -> HostPort:
     assert isinstance(host, str)
     assert isinstance(port, int)
     return HostPort(host=host, port=port)
+
+
+def list_hostport_to_optional(val: AsgiValue | None) -> HostPort | None:
+    """
+    Safe variant that allows missing client/server in the ASGI scope.
+    """
+    if val is None:
+        return None
+    return list_hostport_to_datatype(val)

@@ -34,7 +34,8 @@ def exception_500_middleware(
         try:
             return await view_func(request)
         except Exception as e:
-            logger.error(str(e))
+            # Log full traceback for better diagnostics while keeping response generic
+            logger.exception("Unhandled exception in view")
 
             return error_responder(e)
 

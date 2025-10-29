@@ -6,7 +6,7 @@ from yaki.types import (
     AsgiInstance,
     AsgiValue,
     list_headers_to_tuples,
-    list_hostport_to_datatype,
+    list_hostport_to_optional,
     Receiver,
     Scope,
     Sender,
@@ -122,14 +122,14 @@ def asgi_ws_scope_to_datatype(scope: AsgiEvent) -> WSScope:
             assert isinstance(v, dict)
 
     return WSScope(
-        client=list_hostport_to_datatype(scope.get("client")),
+        client=list_hostport_to_optional(scope.get("client")),
         headers=list_headers_to_tuples(scope["headers"]),
         orig=scope,
         path=path,
         query_string=query_string,
         root_path=root_path,
         scheme=scheme,
-        server=list_hostport_to_datatype(scope.get("client")),
+        server=list_hostport_to_optional(scope.get("server")),
         subprotocols=subprotocols,
     )
 

@@ -10,7 +10,7 @@ from yaki.http.types import (
 from yaki.types import (
     AsgiInstance,
     list_headers_to_tuples,
-    list_hostport_to_datatype,
+    list_hostport_to_optional,
     Receiver,
     Scope,
     Sender,
@@ -56,7 +56,7 @@ def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:
 
     return HttpRequest(
         body=content,
-        client=list_hostport_to_datatype(scope.get("client")),
+        client=list_hostport_to_optional(scope.get("client")),
         custom=SimpleNamespace(),
         extensions=extensions,
         headers=list_headers_to_tuples(scope["headers"]),
@@ -67,7 +67,7 @@ def asgi_to_http_request(content: bytes, scope: Scope) -> HttpRequest:
         root_path=root_path,
         scheme=scheme,
         scope_orig=MappingProxyType(scope),
-        server=list_hostport_to_datatype(scope.get("server")),
+        server=list_hostport_to_optional(scope.get("server")),
     )
 
 

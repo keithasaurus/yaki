@@ -28,7 +28,7 @@ class HttpRequest(NamedTuple):
     root_path: str
     scheme: str
     scope_orig: Scope
-    server: HostPort
+    server: Optional[HostPort]
 
 
 # friendlier types
