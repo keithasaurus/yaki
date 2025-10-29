@@ -101,7 +101,7 @@ def asgi_ws_scope_to_datatype(scope: AsgiEvent) -> WSScope:
     query_string = scope.get("query_string", b"")
     scheme = scope.get("scheme")
     root_path = scope.get("root_path")
-    subprotocols = scope.get("subprotocols")
+    raw_subprotocols = scope.get("subprotocols")
     extensions = scope.get("extensions")
 
     assert isinstance(path, str)
@@ -109,10 +109,14 @@ def asgi_ws_scope_to_datatype(scope: AsgiEvent) -> WSScope:
     assert isinstance(scheme, str) or scheme is None
     assert isinstance(root_path, str) or root_path is None
 
-    if subprotocols is not None:
-        assert isinstance(subprotocols, list)
-        for s in subprotocols:
+    subprotocols: list[str] | None = None
+    if raw_subprotocols is not None:
+        assert isinstance(raw_subprotocols, list)
+        tmp: list[str] = []
+        for s in raw_subprotocols:
             assert isinstance(s, str)
+            tmp.append(s)
+        subprotocols = tmp
 
     if extensions is not None:
         assert isinstance(extensions, dict)

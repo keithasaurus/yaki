@@ -37,6 +37,9 @@ def call_http_endpoint(
     async def receiver() -> AsgiEvent:
         return events_iter.pop(0)
 
-    asyncio.run(endpoint(receiver, sender))
+    async def _runner() -> None:
+        await endpoint(receiver, sender)
+
+    asyncio.run(_runner())
 
     return responses

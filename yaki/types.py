@@ -5,6 +5,7 @@ from typing import (
     Mapping,
     NamedTuple,
     Union,
+    Coroutine,
 )
 
 _ASGI_SCALAR = Union[bytes, str, int, float, bool, None]
