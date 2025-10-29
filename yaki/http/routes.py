@@ -95,9 +95,9 @@ def normalize_routes(proto_routes: Iterable[HttpProtoRoute]) -> tuple[HttpRoute,
         # note that mypy isn't able to determine that we're essentially
         # pattern matching on tuple length, so ignoring type below.
         if len(proto_route) == 3:
-            routes.append(three_tuple_proto_to_route(proto_route))  # type: ignore
+            routes.append(three_tuple_proto_to_route(proto_route))
         elif len(proto_route) == 2:
-            routes.append(two_tuple_proto_to_route(proto_route))  # type: ignore
+            routes.append(two_tuple_proto_to_route(proto_route))
         else:
             raise ValueError("Bad Route! Wrong sized tuple")
 
