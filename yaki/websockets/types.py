@@ -20,32 +20,32 @@ class _WSConnectType:
 ws_connect = _WSConnectType()
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class WSAccept:
     subprotocol: Optional[str]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class WSSend:
     content: Union[str, bytes]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class WSClose:
     code: int
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class WSDisconnect:
     code: int
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class WSReceive:
     content: Union[str, bytes]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class WSScope:
     path: str
     query_string: bytes
@@ -61,7 +61,7 @@ class WSScope:
 WSIncomingEvent = Union[_WSConnectType, WSReceive, WSDisconnect, WSClose]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class WSInbound:
     custom: SimpleNamespace
     event: WSIncomingEvent

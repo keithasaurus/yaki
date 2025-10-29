@@ -35,7 +35,7 @@ class HttpRequest(NamedTuple):
 ResponseTypes = Union[str, bytes]
 
 
-@dataclass
+@dataclass(slots=True)
 class HttpResponse:
     """
     using dataclass instead of named tuple for mutability... if

@@ -11,18 +11,35 @@ from yaki.websockets.endpoints import (
     ws_incoming_to_datatype,
     ws_outgoing_to_event_dict,
 )
+from yaki.websockets.types import WSAccept, WSSend, WSClose, WSDisconnect
 
 
 class WSEndpointTests(TestCase):
-    def test_receive_works(
-        self,
-        test_scope,
-        test_receive_events,
-        test_accept_event,
-        test_send_events,
-        test_close_event,
-        test_disconnect,
-    ):
+    def test_receive_works(self):
+        # Build a minimal, deterministic scope and events
+        test_scope: Scope = {
+            "type": "websocket",
+            "path": "/",
+            "headers": [],
+            "query_string": b"",
+            "root_path": "",
+            "client": ["127.0.0.1", 5000],
+            "server": ["127.0.0.1", 5000],
+            "subprotocols": ["chat"],
+            "extensions": {},
+            "scheme": "ws",
+        }
+
+        test_receive_events = [
+            {"type": "websocket.receive", "bytes": b"hi", "text": None},
+            {"type": "websocket.receive", "bytes": None, "text": "hello"},
+        ]
+
+        test_accept_event = WSAccept(subprotocol=None)
+        test_send_events = [WSSend("Hello"), WSSend(b"bytes")] 
+        test_close_event = WSClose(1000)
+        test_disconnect = WSDisconnect(1001)
+
         incoming_events = [asgi_ws_connect()] + test_receive_events
 
         iter_incoming = iter(incoming_events)

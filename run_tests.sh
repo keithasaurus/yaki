@@ -9,7 +9,7 @@ mypy --strict yaki
 mypy --ignore-missing-imports tests examples
 
 echo "Running tests with coverage"
-coverage run -m unittest discover tests
+coverage run -m pytest -q
 
 COVERAGE_THRESHOLD=94
 coverage report --fail-under "$COVERAGE_THRESHOLD" > /dev/null 2>&1
